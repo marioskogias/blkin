@@ -13,67 +13,101 @@ int64_t random_big()
     return a;
 };
 
-struct trace *new_trace(char *service, struct endpoint *endpoint) 
+int blkin_init_new_trace(struct blkin_trace *new_trace, char *service, 
+        struct blkin_endpoint *endpoint) 
 {
-    struct trace *res;
-    res = malloc(sizeof(struct trace));
-    res->service = service;
-    res->trace_id = random_big();
-    res->span_id = random_big();
-    res->parent_span_id = 0;
-    res->trace_endpoint = endpoint;
+    int res;
+    if (!new_trace) {
+        res = -1;
+        goto OUT;
+    }
+    new_trace->service = service;
+    new_trace->info.trace_id = random_big();
+    new_trace->info.span_id = random_big();
+    new_trace->info.parent_span_id = 0;
+    new_trace->trace_endpoint = endpoint;
+    res = 1;
 
+OUT:
     return res;
 }
 
-struct trace *child(struct trace *parent, char *child_name)
+int blkin_init_child(struct blkin_trace *child, struct blkin_trace *parent, char *child_name)
 {
-    struct trace *res;
-    res = malloc(sizeof(struct trace));
-    res->service = child_name;
-    res->trace_id = parent->trace_id;
-    res->span_id = random_big();
-    res->parent_span_id = parent->span_id;
-    res->trace_endpoint = parent->trace_endpoint;
+    int res;
+    if ((!child) || (!parent)){
+        res = -1;
+        goto OUT;
+    }
+    child->service = child_name;
+    child->info.trace_id = parent->info.trace_id;
+    child->info.span_id = random_big();
+    child->info.parent_span_id = parent->info.span_id;
+    child->trace_endpoint = parent->trace_endpoint;
+    res = 1;
 
+OUT:
     return res;
 }
 
-struct endpoint *new_endpoint(char *ip, int port, char *service_name)
+int blkin_new_endpoint(struct blkin_endpoint *endp, char *ip, int port, char *service_name)
 {
-    struct endpoint *res;
-    res = malloc(sizeof(struct endpoint));
-    res->ip = ip;
-    res->port = port;
-    res->service_name = service_name;
+    int res;
+    if (!endp){
+        res = -1;
+        goto OUT;
+    }
+    endp->ip = ip;
+    endp->port = port;
+    endp->service_name = service_name;
+    res = 1;
+
+OUT:
     return res;
 }
 
-struct annotation *string_annotation(char *key, char *val, 
-        struct endpoint *endpoint)
+int blkin_string_annotation(struct blkin_annotation *annotation, char *key, char *val, 
+        struct blkin_endpoint *endpoint)
 {
-    struct annotation *res;
-    res = malloc(sizeof(struct annotation));
-    res->type = ANNOT_STRING;
-    res->key = key;
-    res->val = val;
-    res->annotation_endpoint = endpoint;
+    int res;
+    if (!annotation){
+        res = -1;
+        goto OUT;
+    }
+    annotation->type = ANNOT_STRING;
+    annotation->key = key;
+    annotation->val = val;
+    annotation->annotation_endpoint = endpoint;
+    res = 1;
+
+OUT:
     return res;
 }
 
-struct annotation *timestamp_annotation(char *event, 
-        struct endpoint *endpoint)
+int blkin_init_timestamp_annotation(struct blkin_annotation *annotation, char *event, 
+        struct blkin_endpoint *endpoint)
 {
-    struct annotation *res;
-    res = malloc(sizeof(struct annotation));
-    res->type = ANNOT_TIMESTAMP;
-    res->val = event;
-    res->annotation_endpoint = endpoint;
+    int res;
+    if (!annotation){
+        res = -1;
+        goto OUT;
+    }
+    annotation->type = ANNOT_TIMESTAMP;
+    annotation->val = event;
+    annotation->annotation_endpoint = endpoint;
+    res = 1;
+
+OUT:
     return res;
 }
 
-void record(struct trace *trace, struct annotation *annotation)
+int blkin_record(struct blkin_trace *trace, struct blkin_annotation *annotation)
 {
+    int res;
+    if ((!annotation) || (!trace)){
+        res = -1;
+        goto OUT;
+    }
     if (!annotation->annotation_endpoint && trace->trace_endpoint)
         annotation->annotation_endpoint = trace->trace_endpoint;
     
@@ -81,12 +115,15 @@ void record(struct trace *trace, struct annotation *annotation)
         tracepoint(zipkin, keyval , trace->service, 
                 annotation->annotation_endpoint->port,
                 annotation->annotation_endpoint->ip,
-                trace->trace_id, trace->span_id, trace->parent_span_id, 
+                trace->info.trace_id, trace->info.span_id, trace->info.parent_span_id, 
                 annotation->key, annotation->val);
     else 
         tracepoint(zipkin, timestamp, trace->service, 
                 annotation->annotation_endpoint->port,
                 annotation->annotation_endpoint->ip,
-                trace->trace_id, trace->span_id, trace->parent_span_id, 
+                trace->info.trace_id, trace->info.span_id, trace->info.parent_span_id, 
                 annotation->val);
+    res = 1;
+OUT:
+    return res;
 }

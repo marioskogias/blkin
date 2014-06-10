@@ -14,8 +14,8 @@ struct blkin_trace_info {
 
 struct blkin_trace {
     char *service;
-    struct trace_info info;
-    struct endpoint *trace_endpoint;
+    struct blkin_trace_info info;
+    struct blkin_endpoint *trace_endpoint;
 };
 
 typedef enum {
@@ -31,23 +31,23 @@ struct blkin_annotation {
 };
 
 /* init new trace */
-int init_new_trace(struct trace *new_trace, char *service, 
-        struct endpoint *endpoint);
+int blkin_init_new_trace(struct blkin_trace *new_trace, char *service, 
+        struct blkin_endpoint *endpoint);
 
 /* init child trace */
-int init_child(struct trace *child, struct trace *parent, char *child_name);
+int blkin_init_child(struct blkin_trace *child, struct blkin_trace *parent, char *child_name);
 
 /* create new endpoint */
-int init_endpoint(struct endpoint * entp, char *ip, int port, 
+int blkin_init_endpoint(struct blkin_endpoint * endp, char *ip, int port, 
         char *service_name);
 
 /* create new string annotation */
-int init_string_annotation(struct annotation *annot, char *key, char *val, 
-        struct endpoint * endpoint);
+int blkin_init_string_annotation(struct blkin_annotation *annotation, char *key, char *val, 
+        struct blkin_endpoint * endpoint);
 
 /* create new timestamp annotation */
-int init_timestamp_annotation(struct annotation *annot, char *event, 
-        struct endpoint * endpoint);
+int blkin_init_timestamp_annotation(struct blkin_annotation *annot, char *event, 
+        struct blkin_endpoint * endpoint);
 
 /* log the specific annotation for the specific trace */
-void record(struct trace *trace, struct annotation *annotation);
+int blkin_record(struct blkin_trace *trace, struct blkin_annotation *annotation);
