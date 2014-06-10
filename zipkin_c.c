@@ -48,6 +48,7 @@ struct endpoint *new_endpoint(char *ip, int port, char *service_name)
     res->service_name = service_name;
     return res;
 }
+
 struct annotation *string_annotation(char *key, char *val, 
         struct endpoint *endpoint)
 {
@@ -79,11 +80,13 @@ void record(struct trace *trace, struct annotation *annotation)
     if (annotation->type == ANNOT_STRING)
         tracepoint(zipkin, keyval , trace->service, 
                 annotation->annotation_endpoint->port,
+                annotation->annotation_endpoint->ip,
                 trace->trace_id, trace->span_id, trace->parent_span_id, 
                 annotation->key, annotation->val);
     else 
         tracepoint(zipkin, timestamp, trace->service, 
                 annotation->annotation_endpoint->port,
+                annotation->annotation_endpoint->ip,
                 trace->trace_id, trace->span_id, trace->parent_span_id, 
                 annotation->val);
 }

@@ -17,13 +17,14 @@ TRACEPOINT_EVENT(
         zipkin,
         keyval,
         TP_ARGS(char *, service,
-            int, port, long, trace, 
+            int, port, char *, ip, long, trace, 
             long, span, long, parent_span, 
             char *, key, char *, val ),
         
         TP_FIELDS(
                 ctf_string(service_name, service)
                 ctf_integer(int, port_no, port)
+                ctf_string(ip, ip)
                 ctf_integer(long, trace_id, trace)
         ctf_integer(long, span_id, span)
                 ctf_integer(long, parent_span_id, parent_span)
@@ -41,13 +42,14 @@ TRACEPOINT_EVENT(
         zipkin,
         timestamp,
         TP_ARGS(char *, service,
-            int, port, long, trace, 
+            int, port, char *, ip, long, trace, 
             long, span, long, parent_span, 
             char *, event),
         
         TP_FIELDS(
                 ctf_string(service_name, service)
                 ctf_integer(int, port_no, port)
+                ctf_string(ip, ip)
                 ctf_integer(long, trace_id, trace)
         ctf_integer(long, span_id, span)
                 ctf_integer(long, parent_span_id, parent_span)
@@ -61,3 +63,4 @@ TRACEPOINT_LOGLEVEL(
 #endif /* _ZIPKIN_H */
 
 #include <lttng/tracepoint-event.h>
+
