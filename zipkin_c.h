@@ -1,46 +1,52 @@
 #include <stdint.h>
 
-struct endpoint {
-    char * ip;
+struct blkin_endpoint {
+    char *ip;
     int port;
-    char * service_name;
+    char *service_name;
 };
 
-struct trace {
-    char * service;
+struct blkin_trace_info {
     int64_t trace_id;
     int64_t span_id;
     int64_t parent_span_id;
-    struct endpoint * trace_endpoint;
 };
 
-enum annotation_type {
+struct blkin_trace {
+    char *service;
+    struct trace_info info;
+    struct endpoint *trace_endpoint;
+};
+
+typedef enum {
     ANNOT_STRING = 0,
     ANNOT_TIMESTAMP
+} blkin_annotation_type;
+
+struct blkin_annotation {
+    blkin_annotation_type type;
+    char *key;
+    char *val;
+    struct blkin_endpoint *annotation_endpoint;
 };
 
-struct annotation {
-    enum annotation_type type;
-    char * key;
-    char * val;
-    struct endpoint * annotation_endpoint;
-};
+/* init new trace */
+int init_new_trace(struct trace *new_trace, char *service, 
+        struct endpoint *endpoint);
 
-/* create new trace */
-struct trace *new_trace(char * service, struct endpoint * endpoint);
-
-/* create child trace */
-struct trace *child(struct trace *parent, char *child_name);
+/* init child trace */
+int init_child(struct trace *child, struct trace *parent, char *child_name);
 
 /* create new endpoint */
-struct endpoint *new_endpoint(char *ip, int port, char *service_name);
+int init_endpoint(struct endpoint * entp, char *ip, int port, 
+        char *service_name);
 
 /* create new string annotation */
-struct annotation *string_annotation(char *key, char *val, 
+int init_string_annotation(struct annotation *annot, char *key, char *val, 
         struct endpoint * endpoint);
 
 /* create new timestamp annotation */
-struct annotation *timestamp_annotation(char *event, 
+int init_timestamp_annotation(struct annotation *annot, char *event, 
         struct endpoint * endpoint);
 
 /* log the specific annotation for the specific trace */
