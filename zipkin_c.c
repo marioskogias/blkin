@@ -50,7 +50,7 @@ OUT:
     return res;
 }
 
-int blkin_new_endpoint(struct blkin_endpoint *endp, char *ip, int port, char *service_name)
+int blkin_init_endpoint(struct blkin_endpoint *endp, char *ip, int port, char *service_name)
 {
     int res;
     if (!endp){

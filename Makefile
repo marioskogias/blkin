@@ -16,15 +16,14 @@ tp.o: tp.c zipkin_trace.h
 	gcc -I. -fpic -c -o $@ $<
 
 test: test.c $(DLIB)
-	#gcc test.c -o test -L. -lzipkin-c
-	gcc test.c -o test tp.o zipkin_c.o $(DLFLAGS)
+	gcc test.c -o test -L. -lzipkin-c
 
 run:
 	LD_LIBRARY_PATH=$(LIB_DIR) ./test
 
 clean: 
-	rm -f *.o test
+	rm -f *.o 
 
 distclean:
 	make clean
-	rm -f $(DLIB)
+	rm -f $(DLIB) test
