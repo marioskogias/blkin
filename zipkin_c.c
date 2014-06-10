@@ -112,13 +112,13 @@ int blkin_record(struct blkin_trace *trace, struct blkin_annotation *annotation)
         annotation->annotation_endpoint = trace->trace_endpoint;
     
     if (annotation->type == ANNOT_STRING)
-        tracepoint(zipkin, keyval , trace->service, 
+        tracepoint(zipkin, keyval, trace->service, annotation->annotation_endpoint->service_name, 
                 annotation->annotation_endpoint->port,
                 annotation->annotation_endpoint->ip,
                 trace->info.trace_id, trace->info.span_id, trace->info.parent_span_id, 
                 annotation->key, annotation->val);
     else 
-        tracepoint(zipkin, timestamp, trace->service, 
+        tracepoint(zipkin, timestamp , trace->service, annotation->annotation_endpoint->service_name, 
                 annotation->annotation_endpoint->port,
                 annotation->annotation_endpoint->ip,
                 trace->info.trace_id, trace->info.span_id, trace->info.parent_span_id, 

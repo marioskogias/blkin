@@ -14,7 +14,10 @@ struct message {
     struct blkin_trace_info trace_info;
 };
 
-void process_a(int fd) 
+/*the pipe file descriptors*/
+int fd[2];
+
+void process_a() 
 {
     int i;
     printf("I am process A: %d\n", getpid());
@@ -26,7 +29,7 @@ void process_a(int fd)
     struct blkin_trace trace;
     struct blkin_annotation ant;
     struct message msg = {.actual_message = "message"};
-    
+    char ack;
     for (i=0;i<10;i++) {
         
         /*create trace*/
@@ -39,29 +42,33 @@ void process_a(int fd)
         blkin_set_trace_info(&trace, &msg.trace_info);
         
         /*send*/
-        write(fd, &msg, sizeof(struct message));
+        write(fd[1], &msg, sizeof(struct message));
         
+        usleep(10);
+        /*wait for ack*/
+        read(fd[0], &ack, 1);
+
         /*create annotation and log*/
         blkin_init_timestamp_annotation(&ant, "end", &endp);
         blkin_record(&trace, &ant);
     }
 }
 
-void process_b(int fd) 
+void process_b() 
 {
     int i;
     printf("I am process B: %d\n", getpid());
     
     /*initialize endpoint*/
     struct blkin_endpoint endp;
-    blkin_init_endpoint(&endp, "10.0.0.1", 5000, "service b");
+    blkin_init_endpoint(&endp, "10.0.0.2", 5001, "service b");
     
     struct blkin_trace trace;
     struct blkin_annotation ant;
     struct message msg;
 
     for (i=0;i<10;i++) {
-        read(fd, &msg, sizeof(struct message));
+        read(fd[0], &msg, sizeof(struct message));
         
         /*create child trace*/
         blkin_instant_child(&trace, &msg.trace_info, "process b");  
@@ -75,30 +82,26 @@ void process_b(int fd)
         printf("Message received %s\n", msg.actual_message);
         
         /*create annotation and log*/
-        blkin_init_timestamp_annotation(&ant, "start", &endp);
+        blkin_init_timestamp_annotation(&ant, "end", &endp);
         blkin_record(&trace, &ant);
 
+        /*send ack*/
+        write(fd[1], "*", 1);
     }
 }
 
 
 int main()
 {
-    /*the pipe file descriptors*/
-    int fd[2];
     /*create the pipe*/
     pipe(fd);
 
     if (fork()){
-        /*process a will only send*/
-        close(fd[0]);
-        process_a(fd[1]);
+        process_a();
         exit(1);
     }
     else{
-        /*process b will only receive*/
-        close(fd[1]);
-        process_b(fd[0]);
+        process_b();
         exit(1);
     }
 }
