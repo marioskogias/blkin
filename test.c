@@ -1,29 +1,52 @@
+/*
+ * In this example we have 2 processes communicating over a pipe.
+ * We are going to trace the communication with our library
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
+
 #include "zipkin_c.h"
 
-void child_process(struct trace *parent) 
-{
-    struct trace * child_trace = child(parent, "child_service");
-    struct endpoint *child_endpoint = new_endpoint("10.0.0.2", 1002, "child");
-    struct annotation * child_an = timestamp_annotation("child_start", child_endpoint);
+struct message {
+    char actual_message[20];
+    struct blkin_trace_info trace_info;
+};
 
-    record(child_trace, child_an);
-    usleep(10);
-    child_an = string_annotation("key", "val", child_endpoint);
-    record(child_trace, child_an);
-    usleep(10);
-    child_an = timestamp_annotation("child_end", child_endpoint);
-    record(child_trace, child_an);
+void process_a(int fd) 
+{
+    printf("I am process A: %d\n", getpid());
+    struct message m = {.actual_message = "test"};
+    write(fd, &m, sizeof(struct message));
 }
 
-int main() {
-    struct endpoint *parent_endpoint = new_endpoint("10.0.0.1",1000,"parent");
-    struct trace *p_trace = new_trace("parent_service", parent_endpoint);
+void process_b(int fd) 
+{
+    printf("I am process B: %d\n", getpid());
+    struct message m;
+    read(fd, &m, sizeof(struct message));
+    printf("Message received %s\n", m.actual_message);
+}
 
-    struct annotation *parent_an = timestamp_annotation("parent start", NULL);
-    record(p_trace, parent_an);
-    child_process(p_trace);
-    usleep(100);
-    parent_an = timestamp_annotation("parent end", NULL);
-    record(p_trace, parent_an);
+
+int main()
+{
+    /*the pipe file descriptors*/
+    int fd[2];
+    /*create the pipe*/
+    pipe(fd);
+
+    if (fork()){
+        /*process a will only send*/
+        close(fd[0]);
+        process_a(fd[1]);
+        exit(1);
+    }
+    else{
+        /*process b will only receive*/
+        close(fd[1]);
+        process_b(fd[0]);
+        exit(1);
+    }
 }
