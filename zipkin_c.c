@@ -127,3 +127,39 @@ int blkin_record(struct blkin_trace *trace, struct blkin_annotation *annotation)
 OUT:
     return res;
 }
+
+int blkin_get_trace_info(struct blkin_trace *trace, struct blkin_trace_info *info)
+{
+    int res;
+    if ((!trace) || (!info)){
+        res = -1;
+        goto OUT;
+    }
+
+    memcpy(&trace->info, info, sizeof(struct blkin_trace_info));
+
+OUT:
+    return res;
+}
+
+int blkin_set_trace_info(struct blkin_trace *trace, struct blkin_trace_info *info)
+{
+    int res;
+    if ((!trace) || (!info)){
+        res = -1;
+        goto OUT;
+    }
+
+    memcpy(info, &trace->info, sizeof(struct blkin_trace_info));
+
+OUT:
+    return res;
+}
+
+int blkin_instant_child(struct blkin_trace *child, struct blkin_trace_info *info, char *child_name)
+{
+    //Is this possible with a macro?
+    struct blkin_trace parent;
+    blkin_get_trace_info(&parent, info);
+    return blkin_init_child(child, &parent, child_name);
+}

@@ -1,5 +1,7 @@
 #include <stdint.h>
 
+//#define CHILD(child, info) blkin_init_child({}
+
 struct blkin_endpoint {
     char *ip;
     int port;
@@ -51,3 +53,12 @@ int blkin_init_timestamp_annotation(struct blkin_annotation *annot, char *event,
 
 /* log the specific annotation for the specific trace */
 int blkin_record(struct blkin_trace *trace, struct blkin_annotation *annotation);
+
+/* Copy trace info to trace */
+int blkin_get_trace_info(struct blkin_trace *trace, struct blkin_trace_info *info);
+
+/* Set trace info */
+int blkin_set_trace_info(struct blkin_trace *trace, struct blkin_trace_info *info);
+
+/* Init child from trace_info */
+int blkin_instant_child(struct blkin_trace *child, struct blkin_trace_info *info, char *child_name);
