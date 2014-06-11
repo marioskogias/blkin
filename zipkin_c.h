@@ -61,22 +61,11 @@ int blkin_init_child(struct blkin_trace *child, struct blkin_trace *parent,
         char *child_name);
 
 /**
- * Initialize a blkin_trace_info struct as child of another given one. This means
+ * Initialize a blkin_trace struct and set the blkin_trace_info field to be 
+ * child of the given blkin_trace_info. This means
  * Same trace_id
  * Different span_id
  * Child's parent_span_id == parent's span_id
- *
- * @param child the new child blkin_trace_info
- * @param parent the parent blkin_trace_info to get the information from
- *
- * @returns 1 if success -1 if error
- */
-int blkin_init_child_info(struct bkin_trace_info *child, 
-        struct blkin_trace_info *parent);
-
-/**
- * Initialize a blkin_trace struct and set the blkin_trace_info field to be 
- * child of the given blkin_trace_info
  *
  * @param child the new child blkin_trace_info
  * @param info the parent's blkin_trace_info struct
@@ -84,7 +73,7 @@ int blkin_init_child_info(struct bkin_trace_info *child,
  *
  * @returns 1 if success -1 if error
  */
-int blkin_init_child_with_info(struct blkin_trace *child,
+int blkin_init_child_info(struct blkin_trace *child,
         struct blkin_trace_info *info, char *child_name);
 
 /**

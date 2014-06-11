@@ -32,17 +32,37 @@ OUT:
     return res;
 }
 
-int blkin_init_child(struct blkin_trace *child, struct blkin_trace *parent, char *child_name)
+int blkin_init_child_info(struct blkin_trace *child, 
+        struct blkin_trace_info *parent_info, char *child_name)
 {
     int res;
-    if ((!child) || (!parent)){
+    if ((!child) || (!parent_info)){
         res = -1;
         goto OUT;
     }
-    child->name = child_name;
-    child->info.trace_id = parent->info.trace_id;
+    child->info.trace_id = parent_info->trace_id;
     child->info.span_id = random_big();
-    child->info.parent_span_id = parent->info.span_id;
+    child->info.parent_span_id = parent_info->span_id;
+    child->name = child_name;
+    child->trace_endpoint = NULL;
+    res = 1;
+
+OUT:
+    return res;
+}
+
+int blkin_init_child(struct blkin_trace *child, struct blkin_trace *parent, 
+        char *child_name)
+{
+    int res;
+    if (!parent) {
+        res = -1;
+        goto OUT;
+    }
+    if (!blkin_init_child_info(child, &parent->info, child_name)){
+        res = -1;
+        goto OUT;
+    }
     child->trace_endpoint = parent->trace_endpoint;
     res = 1;
 
@@ -50,7 +70,8 @@ OUT:
     return res;
 }
 
-int blkin_init_endpoint(struct blkin_endpoint *endp, char *ip, int port, char *service_name)
+int blkin_init_endpoint(struct blkin_endpoint *endp, char *ip, int port, 
+        char *service_name)
 {
     int res;
     if (!endp){
@@ -66,8 +87,8 @@ OUT:
     return res;
 }
 
-int blkin_string_annotation(struct blkin_annotation *annotation, char *key, char *val, 
-        struct blkin_endpoint *endpoint)
+int blkin_string_annotation(struct blkin_annotation *annotation, char *key,
+        char *val, struct blkin_endpoint *endpoint)
 {
     int res;
     if (!annotation){
@@ -84,8 +105,8 @@ OUT:
     return res;
 }
 
-int blkin_init_timestamp_annotation(struct blkin_annotation *annotation, char *event, 
-        struct blkin_endpoint *endpoint)
+int blkin_init_timestamp_annotation(struct blkin_annotation *annotation,
+        char *event, struct blkin_endpoint *endpoint)
 {
     int res;
     if (!annotation){
@@ -112,23 +133,28 @@ int blkin_record(struct blkin_trace *trace, struct blkin_annotation *annotation)
         annotation->annotation_endpoint = trace->trace_endpoint;
     
     if (annotation->type == ANNOT_STRING)
-        tracepoint(zipkin, keyval, trace->name, annotation->annotation_endpoint->service_name, 
+        tracepoint(zipkin, keyval, trace->name, 
+                annotation->annotation_endpoint->service_name, 
                 annotation->annotation_endpoint->port,
                 annotation->annotation_endpoint->ip,
-                trace->info.trace_id, trace->info.span_id, trace->info.parent_span_id, 
+                trace->info.trace_id, trace->info.span_id,
+                trace->info.parent_span_id, 
                 annotation->key, annotation->val);
     else 
-        tracepoint(zipkin, timestamp , trace->name, annotation->annotation_endpoint->service_name, 
+        tracepoint(zipkin, timestamp , trace->name,
+                annotation->annotation_endpoint->service_name, 
                 annotation->annotation_endpoint->port,
                 annotation->annotation_endpoint->ip,
-                trace->info.trace_id, trace->info.span_id, trace->info.parent_span_id, 
+                trace->info.trace_id, trace->info.span_id,
+                trace->info.parent_span_id, 
                 annotation->val);
     res = 1;
 OUT:
     return res;
 }
 
-int blkin_get_trace_info(struct blkin_trace *trace, struct blkin_trace_info *info)
+int blkin_get_trace_info(struct blkin_trace *trace, 
+        struct blkin_trace_info *info)
 {
     int res;
     if ((!trace) || (!info)){
@@ -142,7 +168,8 @@ OUT:
     return res;
 }
 
-int blkin_set_trace_info(struct blkin_trace *trace, struct blkin_trace_info *info)
+int blkin_set_trace_info(struct blkin_trace *trace, 
+        struct blkin_trace_info *info)
 {
     int res;
     if ((!trace) || (!info)){
@@ -156,7 +183,8 @@ OUT:
     return res;
 }
 
-int blkin_instant_child(struct blkin_trace *child, struct blkin_trace_info *info, char *child_name)
+int blkin_instant_child(struct blkin_trace *child, 
+        struct blkin_trace_info *info, char *child_name)
 {
     //Is this possible with a macro?
     struct blkin_trace parent;
