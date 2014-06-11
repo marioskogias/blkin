@@ -1,30 +1,51 @@
 #include <stdint.h>
 
-//#define CHILD(child, info) blkin_init_child({}
-
+/**
+ * @struct blkin_endpoint
+ * Information about an endpoint of our instrumented application where 
+ * annotations take place
+ */ 
 struct blkin_endpoint {
     char *ip;
     int port;
     char *service_name;
 };
 
+/**
+ * @struct blkin_trace_info
+ * The information exchanged between different layers offering the needed 
+ * trace semantics
+ */
 struct blkin_trace_info {
     int64_t trace_id;
     int64_t span_id;
     int64_t parent_span_id;
 };
 
+/**
+ * @struct blkin_trace
+ * Struct used to define the context in which an annotation happens
+ */
 struct blkin_trace {
     char *name;
     struct blkin_trace_info info;
     struct blkin_endpoint *trace_endpoint;
 };
 
+/**
+ * @typedef blkin_annotation_type
+ * There are 2 kinds of annotation key-val and timestamp
+ */
 typedef enum {
     ANNOT_STRING = 0,
     ANNOT_TIMESTAMP
 } blkin_annotation_type;
 
+/**
+ * @struct blkin_annotation
+ * Struct carrying information about an annotation. This information can either
+ * be key-val or that a specific event happened
+ */
 struct blkin_annotation {
     blkin_annotation_type type;
     char *key;
