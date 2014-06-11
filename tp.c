@@ -30,4 +30,4 @@
 /*
  * The header containing our TRACEPOINT_EVENTs. 
  */
-#include "/root/archipelago_lttng/xseg/tools/zipkin_trace.h"
+#include "./zipkin_trace.h"
