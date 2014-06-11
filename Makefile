@@ -26,4 +26,4 @@ clean:
 
 distclean:
 	make clean
-	rm -f $(DLIB) test
+	rm -f $(DLIB) test socket
