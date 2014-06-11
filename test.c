@@ -150,10 +150,10 @@ int main()
 {
     if (fork()){
         process_a();
-        exit(1);
+        exit(0);
     }
     else{
         process_b();
-        exit(1);
+        exit(0);
     }
 }

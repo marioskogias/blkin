@@ -19,7 +19,7 @@ test: test.c $(DLIB)
 	gcc test.c -o test -L. -lzipkin-c
 
 run:
-	LD_LIBRARY_PATH=$(LIB_DIR) ./test
+	LD_PRELOAD=/usr/local/lib/liblttng-ust-fork.so LD_LIBRARY_PATH=$(LIB_DIR) ./test
 
 clean: 
 	rm -f *.o 
