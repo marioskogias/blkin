@@ -1,5 +1,13 @@
 #include <stdint.h>
 
+#define BLKIN_TIMESTAMP(trace, annot, endp, event) \
+    blkin_init_timestamp_annotation(annot, event, endp); \
+    blkin_record(trace, annot);
+
+#define BLKIN_KEYVAL(trace, annot, endp, key, val) \
+    blkin_init_string_annotation(annot, key, val, endp); \
+    blkin_record(trace, annot);
+
 /**
  * @struct blkin_endpoint
  * Information about an endpoint of our instrumented application where 
