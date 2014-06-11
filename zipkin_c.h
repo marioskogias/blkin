@@ -15,7 +15,7 @@ struct blkin_trace_info {
 };
 
 struct blkin_trace {
-    char *service;
+    char *name;
     struct blkin_trace_info info;
     struct blkin_endpoint *trace_endpoint;
 };

@@ -21,7 +21,7 @@ int blkin_init_new_trace(struct blkin_trace *new_trace, char *service,
         res = -1;
         goto OUT;
     }
-    new_trace->service = service;
+    new_trace->name = service;
     new_trace->info.trace_id = random_big();
     new_trace->info.span_id = random_big();
     new_trace->info.parent_span_id = 0;
@@ -39,7 +39,7 @@ int blkin_init_child(struct blkin_trace *child, struct blkin_trace *parent, char
         res = -1;
         goto OUT;
     }
-    child->service = child_name;
+    child->name = child_name;
     child->info.trace_id = parent->info.trace_id;
     child->info.span_id = random_big();
     child->info.parent_span_id = parent->info.span_id;
@@ -112,13 +112,13 @@ int blkin_record(struct blkin_trace *trace, struct blkin_annotation *annotation)
         annotation->annotation_endpoint = trace->trace_endpoint;
     
     if (annotation->type == ANNOT_STRING)
-        tracepoint(zipkin, keyval, trace->service, annotation->annotation_endpoint->service_name, 
+        tracepoint(zipkin, keyval, trace->name, annotation->annotation_endpoint->service_name, 
                 annotation->annotation_endpoint->port,
                 annotation->annotation_endpoint->ip,
                 trace->info.trace_id, trace->info.span_id, trace->info.parent_span_id, 
                 annotation->key, annotation->val);
     else 
-        tracepoint(zipkin, timestamp , trace->service, annotation->annotation_endpoint->service_name, 
+        tracepoint(zipkin, timestamp , trace->name, annotation->annotation_endpoint->service_name, 
                 annotation->annotation_endpoint->port,
                 annotation->annotation_endpoint->ip,
                 trace->info.trace_id, trace->info.span_id, trace->info.parent_span_id, 

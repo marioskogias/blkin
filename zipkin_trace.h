@@ -16,7 +16,7 @@
 TRACEPOINT_EVENT(
         zipkin,
         keyval,
-        TP_ARGS(char *, service, char *, trace_name,
+        TP_ARGS(char *, trace_name, char *, service, 
             int, port, char *, ip, long, trace, 
             long, span, long, parent_span, 
             char *, key, char *, val ),
@@ -42,7 +42,7 @@ TRACEPOINT_LOGLEVEL(
 TRACEPOINT_EVENT(
         zipkin,
         timestamp,
-        TP_ARGS(char *, service, char *, trace_name,
+        TP_ARGS(char *, trace_name, char *, service, 
             int, port, char *, ip, long, trace, 
             long, span, long, parent_span, 
             char *, event),
