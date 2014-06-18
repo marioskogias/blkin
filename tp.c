@@ -30,4 +30,4 @@
 /*
  * The header containing our TRACEPOINT_EVENTs. 
  */
-#include "./zipkin_trace.h"
+#include <zipkin_trace.h>

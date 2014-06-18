@@ -10,9 +10,9 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 
-#include "zipkin_c.h"
+#include <blkin.h>
 
-#define SOCK_PATH "socket"
+#define SOCK_PATH "/tmp/socket"
 
 struct message {
     char actual_message[20];

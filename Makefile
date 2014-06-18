@@ -1,29 +1,39 @@
 .PHONY: default clean distclean
 
+prefix= /usr/local
+libdir= $(prefix)/lib
+incdir= $(prefix)/include
+
 DFLAGS= -ldl -llttng-ust  
-DLIB=libzipkin-c.so
+DLIB=libblkin.so
 LIB_DIR=$(shell pwd)
+
+H_FILES= blkin.h zipkin_trace.h
 
 default: $(DLIB)
 
-$(DLIB): zipkin_c.o tp.o
+$(DLIB): blkin.o tp.o
 	gcc -shared -o $@ $^ $(DFLAGS)
 
-zipkin_c.o: zipkin_c.c zipkin_c.h zipkin_trace.h
+blkin.o: blkin.c blkin.h zipkin_trace.h
 	gcc -I. -Wall -fpic -c -o $@ $<
 
 tp.o: tp.c zipkin_trace.h
 	gcc -I. -fpic -c -o $@ $<
 
 test: test.c $(DLIB)
-	gcc test.c -o test -L. -lzipkin-c
+	gcc -I. test.c -o test -L. -lblkin
 
 run:
 	LD_PRELOAD=/usr/local/lib/liblttng-ust-fork.so LD_LIBRARY_PATH=$(LIB_DIR) ./test
 
+install:
+	install $(DLIB) $(libdir)
+	install $(H_FILES) $(incdir) 
+	ldconfig
 clean: 
 	rm -f *.o 
 
 distclean:
 	make clean
-	rm -f $(DLIB) test socket
+	rm -f $(DLIB) test

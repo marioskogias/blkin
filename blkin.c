@@ -1,7 +1,7 @@
-#include "zipkin_c.h"
+#include <blkin.h>
 
 #define TRACEPOINT_DEFINE
-#include "zipkin_trace.h"
+#include <zipkin_trace.h>
 
 int64_t random_big()
 {
