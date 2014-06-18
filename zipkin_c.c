@@ -87,7 +87,7 @@ OUT:
     return res;
 }
 
-int blkin_string_annotation(struct blkin_annotation *annotation, char *key,
+int blkin_init_string_annotation(struct blkin_annotation *annotation, char *key,
         char *val, struct blkin_endpoint *endpoint)
 {
     int res;
