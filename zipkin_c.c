@@ -5,6 +5,7 @@
 #include "zipkin_trace.h"
 
 const char *default_ip = "NaN";
+const char *default_name = "NoName";
 
 int64_t random_big()
 {
@@ -76,7 +77,7 @@ OUT:
 }
 
 int blkin_init_endpoint(struct blkin_endpoint *endp, char *ip, int port,
-        char *service_name)
+        char *name)
 {
     int res;
     if (!endp){
@@ -88,7 +89,7 @@ int blkin_init_endpoint(struct blkin_endpoint *endp, char *ip, int port,
 
     endp->ip = ip;
     endp->port = port;
-    endp->service_name = service_name;
+    endp->name = name;
     res = 0;
 
 OUT:
@@ -99,7 +100,7 @@ int blkin_init_string_annotation(struct blkin_annotation *annotation, char *key,
         char *val, struct blkin_endpoint *endpoint)
 {
     int res;
-    if (!annotation){
+    if ((!annotation) || (!key) || (!val)){
         res = -EINVAL;
         goto OUT;
     }
@@ -117,7 +118,7 @@ int blkin_init_timestamp_annotation(struct blkin_annotation *annotation,
         char *event, struct blkin_endpoint *endpoint)
 {
     int res;
-    if (!annotation){
+    if ((!annotation) || (!event)){
         res = -EINVAL;
         goto OUT;
     }
@@ -139,23 +140,39 @@ int blkin_record(struct blkin_trace *trace, struct blkin_annotation *annotation)
     }
     if (!annotation->annotation_endpoint && trace->trace_endpoint)
         annotation->annotation_endpoint = trace->trace_endpoint;
+    if (!trace->name) 
+        trace->name = default_name;
+    if (!annotation->annotation_endpoint->ip)
+        annotation->annotation_endpoint->ip = default_ip;
+    if (!annotation->annotation_endpoint->name)
+        annotation->annotation_endpoint->name = default_name;
 
-    if (annotation->type == ANNOT_STRING)
+    if (annotation->type == ANNOT_STRING) {
+        if ((!annotation->key) || (!annotation->val)) {
+            res = -EINVAL;
+            goto OUT;
+        }
         tracepoint(zipkin, keyval, trace->name,
-                annotation->annotation_endpoint->service_name,
+                annotation->annotation_endpoint->name,
                 annotation->annotation_endpoint->port,
                 annotation->annotation_endpoint->ip,
                 trace->info.trace_id, trace->info.span_id,
                 trace->info.parent_span_id,
                 annotation->key, annotation->val);
-    else
+    }
+    else {
+        if (!annotation->val) {
+            res = -EINVAL;
+            goto OUT;
+        }
         tracepoint(zipkin, timestamp , trace->name,
-                annotation->annotation_endpoint->service_name,
+                annotation->annotation_endpoint->name,
                 annotation->annotation_endpoint->port,
                 annotation->annotation_endpoint->ip,
                 trace->info.trace_id, trace->info.span_id,
                 trace->info.parent_span_id,
                 annotation->val);
+    }
     res = 0;
 OUT:
     return res;

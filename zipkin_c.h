@@ -23,7 +23,7 @@
 struct blkin_endpoint {
     char *ip;
     int port;
-    char *service_name;
+    char *name;
 };
 
 /**
@@ -133,12 +133,12 @@ int blkin_init_child_info(struct blkin_trace *child,
  * @param endp the endpoint to be initialized
  * @param ip the ip address of the specific endpoint
  * @param port the TCP/UDP port of the specific endpoint
- * @param service_name the name of the service running on the specific endpoint
+ * @param name the name of the service running on the specific endpoint
  *
  * @returns 1 if success -1 if error
  */
 int blkin_init_endpoint(struct blkin_endpoint * endp, char *ip, int port, 
-        char *service_name);
+        char *name);
 
 /**
  * Initialize a key-value blkin_annotation
