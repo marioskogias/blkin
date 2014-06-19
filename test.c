@@ -126,7 +126,7 @@ void process_b()
         recv(s, &msg, sizeof(struct message), 0);
 
         /*create child trace*/
-        blkin_init_child_info(&trace, &msg.trace_info, "process b");  
+        blkin_init_child_info(&trace, &msg.trace_info, &endp, "process b");  
 
         /*create annotation and log*/
         blkin_init_timestamp_annotation(&ant, "start", &endp);

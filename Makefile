@@ -1,13 +1,34 @@
-.PHONY: default clean distclean
+.PHONY: default clean distclean run run_c run_pp
 
-DFLAGS= -ldl -llttng-ust  
-DLIB=libzipkin-c.so
+MAJOR=0
+MINOR=1
+LIBS= -ldl -llttng-ust
+DLIB=libzipkin-c
+DLIBPP=libzipkin-cpp
 LIB_DIR=$(shell pwd)
 
-default: $(DLIB)
+default: $(DLIB).so $(DLIBPP).so test testpp
 
-$(DLIB): zipkin_c.o tp.o
-	gcc -shared -o $@ $^ $(DFLAGS)
+$(DLIBPP).so: $(DLIBPP).$(MAJOR).so
+	ln -sf $< $@
+
+$(DLIBPP).$(MAJOR).so: $(DLIBPP).$(MAJOR).$(MINOR).so
+	ln -sf $< $@
+
+$(DLIBPP).$(MAJOR).$(MINOR).so: ztracer.o $(DLIB).so
+	gcc -shared -o $@ $< -L. -lzipkin-c
+
+ztracer.o: ztracer.cc ztracer.hpp
+	gcc -I. -Wall -fpic -c -o $@ $<
+
+$(DLIB).so: $(DLIB).$(MAJOR).so
+	ln -sf $< $@
+
+$(DLIB).$(MAJOR).so: $(DLIB).$(MAJOR).$(MINOR).so
+	ln -sf $< $@
+
+$(DLIB).$(MAJOR).$(MINOR).so: zipkin_c.o tp.o
+	gcc -shared -o $@ $^ $(LIBS)
 
 zipkin_c.o: zipkin_c.c zipkin_c.h zipkin_trace.h
 	gcc -I. -Wall -fpic -c -o $@ $<
@@ -15,15 +36,22 @@ zipkin_c.o: zipkin_c.c zipkin_c.h zipkin_trace.h
 tp.o: tp.c zipkin_trace.h
 	gcc -I. -fpic -c -o $@ $<
 
-test: test.c $(DLIB)
+test: test.c $(DLIB).so
 	gcc test.c -o test -L. -lzipkin-c
 
-run:
-	LD_PRELOAD=/usr/local/lib/liblttng-ust-fork.so LD_LIBRARY_PATH=$(LIB_DIR) ./test
+testpp: test.cc $(DLIBPP).so
+	LD_LIBRARY_PATH=$(LIB_DIR) g++ $< -o testpp -I. -L. -lzipkin-cpp
 
-clean: 
-	rm -f *.o 
+run_c:
+	LD_LIBRARY_PATH=$(LIB_DIR) ./test
 
-distclean:
-	make clean
-	rm -f $(DLIB) test socket
+run_pp:
+	LD_LIBRARY_PATH=$(LIB_DIR) ./testpp
+
+run: run_c run_pp
+
+clean:
+	rm -f *.o *.so test testpp
+
+distclean: clean
+	rm -f socket
