@@ -25,8 +25,8 @@ namespace ZTracer {
 	class ZTraceEndpoint {
 		private:
 			struct blkin_endpoint ep;
-			char *c_ip = NULL;
-			char *c_name = NULL;
+			char *c_ip;
+			char *c_name;
 		protected:
 			struct blkin_endpoint * get_blkin_ep()
 			{
