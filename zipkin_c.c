@@ -63,6 +63,8 @@ int blkin_init_child(struct blkin_trace *child, struct blkin_trace *parent,
         res = -1;
         goto OUT;
     }
+    if (!endpoint)
+        endpoint = parent->trace_endpoint;
     if (!blkin_init_child_info(child, &parent->info, endpoint, child_name)){
         res = -1;
         goto OUT;
