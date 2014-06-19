@@ -70,14 +70,14 @@ namespace ZTracer {
 
 			ZTrace(string name, ZTraceRef t)
 			{
-				ep = t->ep;
+				this->ep = t->ep;
 				c_name = to_cstr(name);
 				blkin_init_child(&trace, t->get_blkin_trace(), ep->get_blkin_ep(), c_name);
 			}
 
 			ZTrace(string name, ZTraceRef t, ZTraceEndpointRef ep)
 			{
-				ep = ep;
+				this->ep = ep;
 				c_name = to_cstr(name);
 				blkin_init_child(&trace, t->get_blkin_trace(), ep->get_blkin_ep(),
 						c_name);
@@ -86,7 +86,7 @@ namespace ZTracer {
 			ZTrace(string name, ZTraceEndpointRef ep, struct blkin_trace_info *info)
 			{
 				c_name = to_cstr(name);
-				ep = ep;
+				this->ep = ep;
 
 				blkin_init_child_info(&trace, info, ep->get_blkin_ep(), c_name);
 			}
