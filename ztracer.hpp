@@ -96,7 +96,9 @@ namespace ZTracer {
 					delete [] c_name;
 				}
 			}
-
+			
+			int get_trace_info(struct blkin_trace_info *info);
+			int set_trace_info(struct blkin_trace_info *info);
 			int keyval(string key, string val);
 			int keyval(string key, string val, ZTraceEndpointRef ep);
 			int event(string event);

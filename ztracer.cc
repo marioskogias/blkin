@@ -17,7 +17,6 @@ namespace ZTracer {
 
 		return to_cstr(s);
 	}
-
 	int ZTrace::keyval(string key, string val)
 	{
 		BLKIN_KEYVAL(&trace, ep->get_blkin_ep(), (char *)key.c_str(),
@@ -74,4 +73,12 @@ namespace ZTracer {
 		boost::shared_ptr<ZTrace> ret(new ZTrace(name, ep, info));
 		return ret;
 	}
+	int ZTrace::get_trace_info(struct blkin_trace_info *info)         
+	{                                                       
+		return blkin_get_trace_info(&trace, info);        
+	}                                                       
+	int ZTrace::set_trace_info(struct blkin_trace_info *info)         
+	{                                                       
+		return blkin_set_trace_info(&trace, info); 
+	}     
 }
