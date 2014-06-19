@@ -40,7 +40,7 @@ int blkin_init_child_info(struct blkin_trace *child,
 	char *child_name)
 {
     int res;
-    if ((!child) || (!parent_info)){
+    if ((!child) || (!parent_info) || (!endpoint)){
         res = -1;
         goto OUT;
     }
