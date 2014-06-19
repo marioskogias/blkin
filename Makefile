@@ -6,6 +6,11 @@ LIBS= -ldl -llttng-ust
 DLIB=libzipkin-c
 DLIBPP=libzipkin-cpp
 LIB_DIR=$(shell pwd)
+prefix= /usr/local
+libdir= $(prefix)/lib
+incdir= $(prefix)/include
+
+H_FILES= zipkin_c.h zipkin_trace.h ztracer.hpp
 
 default: $(DLIB).so $(DLIBPP).so test testpp
 
@@ -49,6 +54,15 @@ run_pp:
 	LD_LIBRARY_PATH=$(LIB_DIR) ./testpp
 
 run: run_c run_pp
+
+install:
+	install -m 644 $(DLIBPP).$(MAJOR).$(MINOR).so $(DESTDIR)/$(libdir)
+	install -m 644 $(DLIBPP).$(MAJOR).so $(DESTDIR)/$(libdir)
+	install -m 644 $(DLIBPP).so $(DESTDIR)/$(libdir)
+	install -m 644 $(DLIB).$(MAJOR).$(MINOR).so $(DESTDIR)/$(libdir)
+	install -m 644 $(DLIB).$(MAJOR).so $(DESTDIR)/$(libdir)
+	install -m 644 $(DLIB).so $(DESTDIR)/$(libdir)
+	install -m 644 $(H_FILES) $(DESTDIR)/$(incdir)
 
 clean:
 	rm -f *.o *.so test testpp
