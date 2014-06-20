@@ -47,11 +47,17 @@ test: test.c $(DLIB).so
 testpp: test.cc $(DLIBPP).so
 	LD_LIBRARY_PATH=$(LIB_DIR) g++ $< -o testpp -I. -L. -lboost_thread -lzipkin-cpp
 
+testppp: test_p.cc $(DLIBPP).so
+	LD_LIBRARY_PATH=$(LIB_DIR) g++ $< -o testppp -I. -L. -lboost_thread -lzipkin-cpp
+
 run_c:
 	LD_LIBRARY_PATH=$(LIB_DIR) ./test
 
 run_pp:
 	LD_LIBRARY_PATH=$(LIB_DIR) ./testpp
+
+run_ppp:
+	LD_LIBRARY_PATH=$(LIB_DIR) ./testppp
 
 run: run_c run_pp
 
@@ -65,7 +71,7 @@ install:
 	install -m 644 $(H_FILES) $(DESTDIR)/$(incdir)
 
 clean:
-	rm -f *.o *.so test testpp
+	rm -f *.o *.so test testpp testppp
 
 distclean: clean
 	rm -f socket
