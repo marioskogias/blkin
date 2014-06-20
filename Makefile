@@ -63,11 +63,11 @@ run: run_c run_pp
 
 install:
 	install -m 644 $(DLIBPP).$(MAJOR).$(MINOR).so $(DESTDIR)/$(libdir)
-	#ln -sf $(DLIBPP).$(MAJOR).so $(DESTDIR)/$(libdir)
-	#ln -sf $(DLIBPP).so $(DESTDIR)/$(libdir)
-	install -m 644 $(DLIB).$(MAJOR).$(MINOR).so $(DESTDIR)/$(libdir)
-	#ln -sf $(DLIB).$(MAJOR).so $(DESTDIR)/$(libdir)
-	#ln -sf $(DLIB).so $(DESTDIR)/$(libdir)
+	cp -P $(DLIBPP).$(MAJOR).so $(DESTDIR)/$(libdir)
+	cp -P $(DLIBPP).so $(DESTDIR)/$(libdir)
+	install -m 644  $(DLIB).$(MAJOR).$(MINOR).so $(DESTDIR)/$(libdir)
+	cp -P $(DLIB).$(MAJOR).so $(DESTDIR)/$(libdir)
+	cp -P $(DLIB).so $(DESTDIR)/$(libdir)
 	install -m 644 $(H_FILES) $(DESTDIR)/$(incdir)
 
 clean:
