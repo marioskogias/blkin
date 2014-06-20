@@ -45,7 +45,7 @@ test: test.c $(DLIB).so
 	gcc test.c -o test -L. -lzipkin-c
 
 testpp: test.cc $(DLIBPP).so
-	LD_LIBRARY_PATH=$(LIB_DIR) g++ $< -o testpp -I. -L. -lzipkin-cpp
+	LD_LIBRARY_PATH=$(LIB_DIR) g++ $< -o testpp -I. -L. -lboost_thread -lzipkin-cpp
 
 run_c:
 	LD_LIBRARY_PATH=$(LIB_DIR) ./test
