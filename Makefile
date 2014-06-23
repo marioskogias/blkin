@@ -37,7 +37,7 @@ $(DLIBPP).$(MAJOR).$(MINOR).so: ztracer.o $(DLIBFRONT).so
 	gcc -shared -g -o $@ $< -L. -lblkin-front
 
 ztracer.o: ztracer.cc ztracer.hpp
-	gcc -I. -Wall -fpic -c -o $@ $<
+	gcc -I. -Wall -fpic -g -c -o $@ $<
 
 $(DLIB).so: $(DLIB).$(MAJOR).so
 	ln -sf $< $@
@@ -49,19 +49,19 @@ $(DLIB).$(MAJOR).$(MINOR).so: zipkin_c.o tp.o
 	gcc -shared -o $@ $^ $(LIBS)
 
 zipkin_c.o: zipkin_c.c zipkin_c.h zipkin_trace.h
-	gcc -I. -Wall -fpic -c -o $@ $<
+	gcc -I. -Wall -fpic -g -c -o $@ $<
 
 tp.o: tp.c zipkin_trace.h
-	gcc -I. -fpic -c -o $@ $<
+	gcc -I. -fpic -g -c -o $@ $<
 
 test: test.c $(DLIBFRONT).so
 	gcc test.c -o test -g -I. -L. -lblkin-front
 
 testpp: test.cc $(DLIBPP).so
-	LD_LIBRARY_PATH=$(LIB_DIR) g++ $< -o testpp -I. -L. -lboost_thread -lzipkin-cpp
+	LD_LIBRARY_PATH=$(LIB_DIR) g++ $< -o testpp -g -I. -L. -lboost_thread -lboost_system -lzipkin-cpp
 
 testppp: test_p.cc $(DLIBPP).so
-	LD_LIBRARY_PATH=$(LIB_DIR) g++ $< -o testppp -I. -L. -lboost_thread -lzipkin-cpp
+	LD_LIBRARY_PATH=$(LIB_DIR) g++ $< -o testppp -g -I. -L. -lboost_thread -lboost_system -lzipkin-cpp
 
 run_c:
 	LD_LIBRARY_PATH=$(LIB_DIR) ./test
