@@ -10,7 +10,7 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 
-#include "zipkin_c.h"
+#include <blkin-front.h>
 
 #define SOCK_PATH "socket"
 
@@ -21,8 +21,14 @@ struct message {
 
 void process_a() 
 {
-    int i;
+    int i, r;
     printf("I am process A: %d\n", getpid());
+
+    r = blkin_init();
+    if (r < 0) {
+	    fprintf(stderr, "Could not initialize blkin\n");
+	    exit(1);
+    }
 
     /*initialize endpoint*/
     struct blkin_endpoint endp;
@@ -91,9 +97,14 @@ void process_a()
 
 void process_b() 
 {
-    int i;
+    int i, r;
     printf("I am process B: %d\n", getpid());
 
+    r = blkin_init();
+    if (r < 0) {
+	    fprintf(stderr, "Could not initialize blkin\n");
+	    exit(1);
+    }
     /*initialize endpoint*/
     struct blkin_endpoint endp;
     blkin_init_endpoint(&endp, "10.0.0.2", 5001, "service b");

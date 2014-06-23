@@ -2,6 +2,11 @@
 #include <cstring>
 
 namespace ZTracer {
+	int ztrace_init(void)
+	{
+		return blkin_init();
+	}
+
 	char * to_cstr(string &s)
 	{
 		char *cstr = new char [s.length()+1];

@@ -162,6 +162,11 @@ class Child {
 };
 int main(int argc, const char *argv[])
 {
+	int r = ZTracer::ztrace_init();
+	if (r < 0) {
+		std::cout << "Error initializing blkin" << std::endl;
+		return -1;
+	}
 	Parent p;
 	Child c;
 	boost::thread workerThread1(p);

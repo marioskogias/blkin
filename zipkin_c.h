@@ -82,6 +82,7 @@ struct blkin_annotation {
     struct blkin_endpoint *annotation_endpoint;
 };
 
+#if 0
 /**
  * Initialize a new blkin_trace with the information given. The new trace will 
  * have no parent so the parent id will be zero.
@@ -93,8 +94,8 @@ struct blkin_annotation {
  *
  * @returns 1 if success -1 if error
  */
-int blkin_init_new_trace(struct blkin_trace *new_trace, char *name, 
-        struct blkin_endpoint *endpoint);
+int _blkin_init_new_trace(struct blkin_trace *new_trace, char *name,
+		struct blkin_endpoint *endpoint);
 
 /**
  * Initialize a blkin_trace as a child of the given parent bkin_trace. The child
@@ -107,8 +108,9 @@ int blkin_init_new_trace(struct blkin_trace *new_trace, char *name,
  *
  * @returns 1 if success -1 if error
  */
-int blkin_init_child(struct blkin_trace *child, struct blkin_trace *parent,
-		struct blkin_endpoint *endpoint, char *child_name);
+int _blkin_init_child(struct blkin_trace *child, struct blkin_trace *parent,
+		struct blkin_endpoint *endpoint,
+		char *child_name);
 
 /**
  * Initialize a blkin_trace struct and set the blkin_trace_info field to be 
@@ -123,7 +125,7 @@ int blkin_init_child(struct blkin_trace *child, struct blkin_trace *parent,
  *
  * @returns 1 if success -1 if error
  */
-int blkin_init_child_info(struct blkin_trace *child,
+int _blkin_init_child_info(struct blkin_trace *child,
         struct blkin_trace_info *info, struct blkin_endpoint *endpoint,
 	char *child_name);
 
@@ -137,8 +139,8 @@ int blkin_init_child_info(struct blkin_trace *child,
  *
  * @returns 1 if success -1 if error
  */
-int blkin_init_endpoint(struct blkin_endpoint * endp, char *ip, int port, 
-        char *name);
+int _blkin_init_endpoint(struct blkin_endpoint * endp, char *ip, int port, 
+		char *name);
 
 /**
  * Initialize a key-value blkin_annotation
@@ -150,8 +152,9 @@ int blkin_init_endpoint(struct blkin_endpoint * endp, char *ip, int port,
  *
  * @returns 1 if success -1 if error
  */
-int blkin_init_string_annotation(struct blkin_annotation *annotation, char *key,
-        char *val, struct blkin_endpoint * endpoint);
+int _blkin_init_string_annotation(struct blkin_annotation *annotation, char *key,
+		char *val,
+		struct blkin_endpoint * endpoint);
 
 /**
  * Initialize a timestamp blkin_annotation
@@ -162,7 +165,7 @@ int blkin_init_string_annotation(struct blkin_annotation *annotation, char *key,
  *
  * @returns 1 if success -1 if error
  */
-int blkin_init_timestamp_annotation(struct blkin_annotation *annot, char *event, 
+int _blkin_init_timestamp_annotation(struct blkin_annotation *annot, char *event,
         struct blkin_endpoint * endpoint);
 
 /**
@@ -173,7 +176,8 @@ int blkin_init_timestamp_annotation(struct blkin_annotation *annot, char *event,
  *
  * @returns 1 if success -1 if error
  */
-int blkin_record(struct blkin_trace *trace, struct blkin_annotation *annotation);
+int _blkin_record(struct blkin_trace *trace,
+		struct blkin_annotation *annotation);
 
 /**
  * Copy a blkin_trace_info struct into a the field info of a blkin_trace struct
@@ -183,7 +187,7 @@ int blkin_record(struct blkin_trace *trace, struct blkin_annotation *annotation)
  *
  * @returns 1 if success -1 if error
  */
-int blkin_get_trace_info(struct blkin_trace *trace,
+int _blkin_get_trace_info(struct blkin_trace *trace,
         struct blkin_trace_info *info);
 
 /**
@@ -194,7 +198,8 @@ int blkin_get_trace_info(struct blkin_trace *trace,
  *
  * @returns 1 if success -1 if error
  */
-int blkin_set_trace_info(struct blkin_trace *trace, struct blkin_trace_info *info);
+int _blkin_set_trace_info(struct blkin_trace *trace,
+		struct blkin_trace_info *info);
 
 
 /**
@@ -205,8 +210,8 @@ int blkin_set_trace_info(struct blkin_trace *trace, struct blkin_trace_info *inf
  *
  * @returns 1 on success, -1 on error
  */
-int blkin_pack_trace_info(struct blkin_trace_info *info,
-				struct blkin_trace_info_packed *pinfo);
+int _blkin_pack_trace_info(struct blkin_trace_info *info,
+		struct blkin_trace_info_packed *pinfo);
 
 /**
  * Convert a packed blkin_trace_info to the unpacked version.
@@ -216,5 +221,7 @@ int blkin_pack_trace_info(struct blkin_trace_info *info,
  *
  * @returns 1 on success, -1 on error
  */
-int blkin_unpack_trace_info(struct blkin_trace_info_packed *pinfo,
-				struct blkin_trace_info *info);
+int _blkin_unpack_trace_info(struct blkin_trace_info_packed *pinfo,
+			struct blkin_trace_info *info);
+
+#endif

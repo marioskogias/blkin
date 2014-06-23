@@ -165,9 +165,19 @@ int main(int argc, const char *argv[])
 	Parent p;
 	Child c;
 	if (fork()) {
+		int r = ZTracer::ztrace_init();
+		if (r < 0) {
+			std::cout << "Error initializing blkin" << std::endl;
+			exit(1);
+		}
 		p();
 		exit(0);
 	} else {
+		int r = ZTracer::ztrace_init();
+		if (r < 0) {
+			std::cout << "Error initializing blkin" << std::endl;
+			exit(1);
+		}
 		c();
 		exit(0);
 	}

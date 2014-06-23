@@ -6,13 +6,14 @@
 #include <boost/smart_ptr.hpp>
 
 extern "C" {
-#include <zipkin_c.h>
+#include <blkin-front.h>
 }
 
 using std::string;
 using std::ostringstream;
 
 namespace ZTracer {
+	int ztrace_init(void);
 	char * to_cstr(string &s);
 	char * ostr_to_cstr(ostringstream &stream);
 
@@ -96,7 +97,7 @@ namespace ZTracer {
 					delete [] c_name;
 				}
 			}
-			
+
 			int get_trace_info(struct blkin_trace_info *info);
 			int set_trace_info(struct blkin_trace_info *info);
 			int keyval(string key, string val);

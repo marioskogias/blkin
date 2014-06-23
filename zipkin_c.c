@@ -17,7 +17,7 @@ int64_t random_big()
     return a;
 };
 
-int blkin_init_new_trace(struct blkin_trace *new_trace, char *service,
+int _blkin_init_new_trace(struct blkin_trace *new_trace, char *service,
         struct blkin_endpoint *endpoint)
 {
     int res;
@@ -36,7 +36,7 @@ OUT:
     return res;
 }
 
-int blkin_init_child_info(struct blkin_trace *child,
+int _blkin_init_child_info(struct blkin_trace *child,
         struct blkin_trace_info *parent_info, struct blkin_endpoint *endpoint,
 	char *child_name)
 {
@@ -56,7 +56,7 @@ OUT:
     return res;
 }
 
-int blkin_init_child(struct blkin_trace *child, struct blkin_trace *parent,
+int _blkin_init_child(struct blkin_trace *child, struct blkin_trace *parent,
 		struct blkin_endpoint *endpoint, char *child_name)
 {
     int res;
@@ -66,7 +66,7 @@ int blkin_init_child(struct blkin_trace *child, struct blkin_trace *parent,
     }
     if (!endpoint)
         endpoint = parent->trace_endpoint;
-    if (blkin_init_child_info(child, &parent->info, endpoint, child_name) != 0){
+    if (_blkin_init_child_info(child, &parent->info, endpoint, child_name) != 0){
         res = -EINVAL;
         goto OUT;
     }
@@ -76,7 +76,7 @@ OUT:
     return res;
 }
 
-int blkin_init_endpoint(struct blkin_endpoint *endp, char *ip, int port,
+int _blkin_init_endpoint(struct blkin_endpoint *endp, char *ip, int port,
         char *name)
 {
     int res;
@@ -96,7 +96,7 @@ OUT:
     return res;
 }
 
-int blkin_init_string_annotation(struct blkin_annotation *annotation, char *key,
+int _blkin_init_string_annotation(struct blkin_annotation *annotation, char *key,
         char *val, struct blkin_endpoint *endpoint)
 {
     int res;
@@ -114,7 +114,7 @@ OUT:
     return res;
 }
 
-int blkin_init_timestamp_annotation(struct blkin_annotation *annotation,
+int _blkin_init_timestamp_annotation(struct blkin_annotation *annotation,
         char *event, struct blkin_endpoint *endpoint)
 {
     int res;
@@ -131,7 +131,7 @@ OUT:
     return res;
 }
 
-int blkin_record(struct blkin_trace *trace, struct blkin_annotation *annotation)
+int _blkin_record(struct blkin_trace *trace, struct blkin_annotation *annotation)
 {
     int res;
     if ((!annotation) || (!trace)){
@@ -178,7 +178,7 @@ OUT:
     return res;
 }
 
-int blkin_get_trace_info(struct blkin_trace *trace,
+int _blkin_get_trace_info(struct blkin_trace *trace,
         struct blkin_trace_info *info)
 {
     int res;
@@ -193,7 +193,7 @@ OUT:
     return res;
 }
 
-int blkin_set_trace_info(struct blkin_trace *trace,
+int _blkin_set_trace_info(struct blkin_trace *trace,
         struct blkin_trace_info *info)
 {
     int res;
@@ -208,7 +208,7 @@ OUT:
     return res;
 }
 
-int blkin_pack_trace_info(struct blkin_trace_info *info,
+int _blkin_pack_trace_info(struct blkin_trace_info *info,
 				struct blkin_trace_info_packed *pinfo)
 {
 	if (!info || !pinfo) {
@@ -222,7 +222,7 @@ int blkin_pack_trace_info(struct blkin_trace_info *info,
 	return 1;
 }
 
-int blkin_unpack_trace_info(struct blkin_trace_info_packed *pinfo,
+int _blkin_unpack_trace_info(struct blkin_trace_info_packed *pinfo,
 				struct blkin_trace_info *info)
 {
 	if (!info || !pinfo) {
