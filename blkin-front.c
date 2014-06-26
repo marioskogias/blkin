@@ -3,6 +3,8 @@
 #include <pthread.h>
 #include <errno.h>
 #include <stdio.h>
+#include <stdlib.h>     /* srand, rand */
+#include <time.h>       /* time */
 
 /* Function pointers to be resolved during initialization */
 int (*blkin_init_new_trace)(struct blkin_trace *new_trace, char *name,
@@ -124,6 +126,11 @@ static int initialized = 0;
 
 int blkin_init(void)
 {
+    /*
+     * Initialize srand with sth appropriete
+     * time is not good for archipelago: several deamons -> same timstamp
+     */
+    srand(time(NULL));
 	int ret;
 	pthread_mutex_lock(&blkin_init_mutex);
 	if (!initialized) {
