@@ -187,8 +187,7 @@ int _blkin_get_trace_info(struct blkin_trace *trace,
         goto OUT;
     }
 
-    memcpy(info, &trace->info, sizeof(struct blkin_trace_info));
-
+    *info = trace->info;
 OUT:
     return res;
 }
@@ -201,8 +200,8 @@ int _blkin_set_trace_info(struct blkin_trace *trace,
         res = -EINVAL;
         goto OUT;
     }
-
-    memcpy(info, &trace->info, sizeof(struct blkin_trace_info));
+    
+    trace->info = *info;
 
 OUT:
     return res;
