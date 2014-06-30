@@ -14,6 +14,8 @@ int64_t random_big()
     a = a << 32;
     int b = rand();
     a = a + b;
+    if (a<0)
+        a = !a;
     return a;
 };
 
