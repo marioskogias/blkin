@@ -89,8 +89,10 @@ namespace ZTracer {
 				c_name = to_cstr(name);
 				this->ep = ep;
 
-				blkin_init_new_trace(&trace, c_name, ep->get_blkin_ep());
+			/*	blkin_init_new_trace(&trace, c_name, ep->get_blkin_ep());
 				blkin_set_trace_info(&trace, info);
+			*/
+				blkin_init_child_info(&trace, info, ep->get_blkin_ep(), c_name);
 			}
 			~ZTrace()
 			{
