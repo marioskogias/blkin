@@ -78,12 +78,12 @@ namespace ZTracer {
 		boost::shared_ptr<ZTrace> ret(new ZTrace(name, ep, info));
 		return ret;
 	}
-	int ZTrace::get_trace_info(struct blkin_trace_info *info)         
-	{                                                       
-		return blkin_get_trace_info(&trace, info);        
-	}                                                       
-	int ZTrace::set_trace_info(struct blkin_trace_info *info)         
-	{                                                       
-		return blkin_set_trace_info(&trace, info); 
-	}     
+	int ZTrace::get_trace_info(struct blkin_trace_info *info)
+	{
+		return blkin_get_trace_info(&trace, info);
+	}
+	int ZTrace::set_trace_info(struct blkin_trace_info *info)
+	{
+		return blkin_set_trace_info(&trace, info);
+	}
 }
