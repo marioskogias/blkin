@@ -5,8 +5,8 @@
 #include <stdio.h>
 #include <stdlib.h>     /* srand, rand */
 #include <time.h>       /* time */
-#include <sys/types.h>
 #include <unistd.h>
+#include <fcntl.h>                                                              
                             
 /* Function pointers to be resolved during initialization */
 int (*blkin_init_new_trace)(struct blkin_trace *new_trace, char *name,
@@ -128,11 +128,14 @@ static int initialized = 0;
 
 int blkin_init(void)
 {
-    /*
-     * Initialize srand with sth appropriete
-     * time is not good for archipelago: several deamons -> same timstamp
-     */
-    srand(getpid()*time(NULL));
+	/*
+	 * Initialize srand with sth appropriete
+	 * time is not good for archipelago: several deamons -> same timstamp
+	 */
+	int inf, seed;                                                              
+	inf = open("/dev/urandom", O_RDONLY); //file descriptor 1                   
+	read(inf, &seed, sizeof(int));    
+	srand(seed);
 	int ret;
 	pthread_mutex_lock(&blkin_init_mutex);
 	if (!initialized) {
