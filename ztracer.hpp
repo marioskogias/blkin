@@ -84,15 +84,16 @@ namespace ZTracer {
 						c_name);
 			}
 
-			ZTrace(string name, ZTraceEndpointRef ep, struct blkin_trace_info *info)
+			ZTrace(string name, ZTraceEndpointRef ep, struct blkin_trace_info *info, bool child=false)
 			{
 				c_name = to_cstr(name);
 				this->ep = ep;
-
-			/*	blkin_init_new_trace(&trace, c_name, ep->get_blkin_ep());
-				blkin_set_trace_info(&trace, info);
-			*/
-				blkin_init_child_info(&trace, info, ep->get_blkin_ep(), c_name);
+				if (child)
+					blkin_init_child_info(&trace, info, ep->get_blkin_ep(), c_name);
+				else {
+					blkin_init_new_trace(&trace, c_name, ep->get_blkin_ep());
+					blkin_set_trace_info(&trace, info);
+				}
 			}
 			~ZTrace()
 			{
@@ -113,7 +114,7 @@ namespace ZTracer {
 	ZTraceRef create_ZTrace(string name, ZTraceEndpointRef ep);
 	ZTraceRef create_ZTrace(string name, ZTraceRef t);
 	ZTraceRef create_ZTrace(string name, ZTraceRef t, ZTraceEndpointRef ep);
-	ZTraceRef create_ZTrace(string name, ZTraceEndpointRef ep, struct blkin_trace_info *info);
+	ZTraceRef create_ZTrace(string name, ZTraceEndpointRef ep, struct blkin_trace_info *info, bool child=false);
 
 }
 #endif /* end of include guard: ZTRACER_H */

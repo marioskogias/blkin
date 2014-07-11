@@ -73,9 +73,9 @@ namespace ZTracer {
 		return ret;
 	}
 
-	ZTraceRef create_ZTrace(string name, ZTraceEndpointRef ep, struct blkin_trace_info *info)
+	ZTraceRef create_ZTrace(string name, ZTraceEndpointRef ep, struct blkin_trace_info *info, bool child)
 	{
-		boost::shared_ptr<ZTrace> ret(new ZTrace(name, ep, info));
+		boost::shared_ptr<ZTrace> ret(new ZTrace(name, ep, info, child));
 		return ret;
 	}
 	int ZTrace::get_trace_info(struct blkin_trace_info *info)
