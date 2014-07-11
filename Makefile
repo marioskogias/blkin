@@ -13,7 +13,7 @@ incdir= $(prefix)/include
 
 H_FILES= zipkin_c.h zipkin_trace.h ztracer.hpp blkin-front.h
 
-default: $(DLIB).so $(DLIBPP).so $(DLIBFRONT).so test testpp
+default: $(DLIB).so $(DLIBPP).so $(DLIBFRONT).so test testpp testppp
 
 $(DLIBFRONT).so: $(DLIBFRONT).$(MAJOR).so
 	ln -sf $< $@
