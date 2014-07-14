@@ -1,12 +1,48 @@
+/*
+ * Copyright 2015 Marios Kogias <marioskogias@gmail.com>
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or
+ * without modification, are permitted provided that the following
+ * conditions are met:
+ *
+ *   1. Redistributions of source code must retain the above
+ *      copyright notice, this list of conditions and the following
+ *      disclaimer.
+ *   2. Redistributions in binary form must reproduce the above
+ *      copyright notice, this list of conditions and the following
+ *      disclaimer in the documentation and/or other materials
+ *      provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY COPYRIGHT HOLDERS ``AS IS'' AND ANY EXPRESS
+ * OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+ * USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
+ * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+ * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 #include <stdint.h>
+#include <asm/byteorder.h>
 
-#define BLKIN_TIMESTAMP(trace, annot, endp, event) \
-    blkin_init_timestamp_annotation(annot, event, endp); \
-    blkin_record(trace, annot);
+#define BLKIN_TIMESTAMP(trace, endp, event) 				\
+	do {								\
+		struct blkin_annotation __annot;			\
+		blkin_init_timestamp_annotation(&__annot, event, endp); \
+		blkin_record(trace, &__annot);				\
+	} while (0);
 
-#define BLKIN_KEYVAL(trace, annot, endp, key, val) \
-    blkin_init_string_annotation(annot, key, val, endp); \
-    blkin_record(trace, annot);
+#define BLKIN_KEYVAL(trace, endp, key, val) 				\
+	do {								\
+		struct blkin_annotation __annot;			\
+		blkin_init_string_annotation(&__annot, key, val, endp);	\
+		blkin_record(trace, &__annot);				\
+	} while (0);
 
 /**
  * @struct blkin_endpoint
@@ -16,7 +52,7 @@
 struct blkin_endpoint {
     char *ip;
     int port;
-    char *service_name;
+    char *name;
 };
 
 /**
@@ -29,6 +65,20 @@ struct blkin_trace_info {
     int64_t span_id;
     int64_t parent_span_id;
 };
+
+/**
+ * @struct blkin_trace_info_packed
+ *
+ * Packed version of the struct blkin_trace_info. Usefull when sending over
+ * network.
+ *
+ */
+struct blkin_trace_info_packed {
+	__be64 trace_id;
+	__be64 span_id;
+	__be64 parent_span_id;
+} __attribute__((packed));
+
 
 /**
  * @struct blkin_trace
@@ -61,6 +111,7 @@ struct blkin_annotation {
     struct blkin_endpoint *annotation_endpoint;
 };
 
+#if 0
 /**
  * Initialize a new blkin_trace with the information given. The new trace will 
  * have no parent so the parent id will be zero.
@@ -72,8 +123,8 @@ struct blkin_annotation {
  *
  * @returns 1 if success -1 if error
  */
-int blkin_init_new_trace(struct blkin_trace *new_trace, char *name, 
-        struct blkin_endpoint *endpoint);
+int _blkin_init_new_trace(struct blkin_trace *new_trace, char *name,
+		struct blkin_endpoint *endpoint);
 
 /**
  * Initialize a blkin_trace as a child of the given parent bkin_trace. The child
@@ -86,8 +137,9 @@ int blkin_init_new_trace(struct blkin_trace *new_trace, char *name,
  *
  * @returns 1 if success -1 if error
  */
-int blkin_init_child(struct blkin_trace *child, struct blkin_trace *parent, 
-        char *child_name);
+int _blkin_init_child(struct blkin_trace *child, struct blkin_trace *parent,
+		struct blkin_endpoint *endpoint,
+		char *child_name);
 
 /**
  * Initialize a blkin_trace struct and set the blkin_trace_info field to be 
@@ -102,8 +154,9 @@ int blkin_init_child(struct blkin_trace *child, struct blkin_trace *parent,
  *
  * @returns 1 if success -1 if error
  */
-int blkin_init_child_info(struct blkin_trace *child,
-        struct blkin_trace_info *info, char *child_name);
+int _blkin_init_child_info(struct blkin_trace *child,
+        struct blkin_trace_info *info, struct blkin_endpoint *endpoint,
+	char *child_name);
 
 /**
  * Initialize a blkin_endpoint struct with the information given
@@ -111,12 +164,12 @@ int blkin_init_child_info(struct blkin_trace *child,
  * @param endp the endpoint to be initialized
  * @param ip the ip address of the specific endpoint
  * @param port the TCP/UDP port of the specific endpoint
- * @param service_name the name of the service running on the specific endpoint
+ * @param name the name of the service running on the specific endpoint
  *
  * @returns 1 if success -1 if error
  */
-int blkin_init_endpoint(struct blkin_endpoint * endp, char *ip, int port, 
-        char *service_name);
+int _blkin_init_endpoint(struct blkin_endpoint * endp, char *ip, int port, 
+		char *name);
 
 /**
  * Initialize a key-value blkin_annotation
@@ -128,8 +181,9 @@ int blkin_init_endpoint(struct blkin_endpoint * endp, char *ip, int port,
  *
  * @returns 1 if success -1 if error
  */
-int blkin_init_string_annotation(struct blkin_annotation *annotation, char *key,
-        char *val, struct blkin_endpoint * endpoint);
+int _blkin_init_string_annotation(struct blkin_annotation *annotation, char *key,
+		char *val,
+		struct blkin_endpoint * endpoint);
 
 /**
  * Initialize a timestamp blkin_annotation
@@ -140,7 +194,7 @@ int blkin_init_string_annotation(struct blkin_annotation *annotation, char *key,
  *
  * @returns 1 if success -1 if error
  */
-int blkin_init_timestamp_annotation(struct blkin_annotation *annot, char *event, 
+int _blkin_init_timestamp_annotation(struct blkin_annotation *annot, char *event,
         struct blkin_endpoint * endpoint);
 
 /**
@@ -151,7 +205,8 @@ int blkin_init_timestamp_annotation(struct blkin_annotation *annot, char *event,
  *
  * @returns 1 if success -1 if error
  */
-int blkin_record(struct blkin_trace *trace, struct blkin_annotation *annotation);
+int _blkin_record(struct blkin_trace *trace,
+		struct blkin_annotation *annotation);
 
 /**
  * Copy a blkin_trace_info struct into a the field info of a blkin_trace struct
@@ -161,7 +216,7 @@ int blkin_record(struct blkin_trace *trace, struct blkin_annotation *annotation)
  *
  * @returns 1 if success -1 if error
  */
-int blkin_get_trace_info(struct blkin_trace *trace,
+int _blkin_get_trace_info(struct blkin_trace *trace,
         struct blkin_trace_info *info);
 
 /**
@@ -172,4 +227,30 @@ int blkin_get_trace_info(struct blkin_trace *trace,
  *
  * @returns 1 if success -1 if error
  */
-int blkin_set_trace_info(struct blkin_trace *trace, struct blkin_trace_info *info);
+int _blkin_set_trace_info(struct blkin_trace *trace,
+		struct blkin_trace_info *info);
+
+
+/**
+ * Convert a blkin_trace_info to the packed version.
+ *
+ * @param info The unpacked trace info.
+ * @param pinfo The provided packed version to be initialized.
+ *
+ * @returns 1 on success, -1 on error
+ */
+int _blkin_pack_trace_info(struct blkin_trace_info *info,
+		struct blkin_trace_info_packed *pinfo);
+
+/**
+ * Convert a packed blkin_trace_info to the unpacked version.
+ *
+ * @param pinfo The provided packed version to be unpacked.
+ * @param info The unpacked trace info.
+ *
+ * @returns 1 on success, -1 on error
+ */
+int _blkin_unpack_trace_info(struct blkin_trace_info_packed *pinfo,
+			struct blkin_trace_info *info);
+
+#endif
