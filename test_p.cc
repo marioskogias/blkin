@@ -191,14 +191,13 @@ class Child {
 };
 int main(int argc, const char *argv[])
 {
-	Parent p;
-	Child c;
 	if (fork()) {
 		int r = ZTracer::ztrace_init();
 		if (r < 0) {
 			std::cout << "Error initializing blkin" << std::endl;
 			exit(1);
 		}
+	    Parent p;
 		p();
 		exit(0);
 	} else {
@@ -207,6 +206,7 @@ int main(int argc, const char *argv[])
 			std::cout << "Error initializing blkin" << std::endl;
 			exit(1);
 		}
+	    Child c;
 		c();
 		exit(0);
 	}
