@@ -109,7 +109,7 @@ void process_a()
         blkin_record(&trace, &ant);
 
         /*set trace fields to message*/
-        blkin_set_trace_info(&trace, &msg.trace_info);
+        blkin_get_trace_info(&trace, &msg.trace_info);
 
         /*send*/
         send(s2, &msg, sizeof(struct message), 0);
