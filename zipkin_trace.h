@@ -19,7 +19,7 @@ TRACEPOINT_EVENT(
         TP_ARGS(char *, trace_name, char *, service, 
             int, port, char *, ip, long, trace, 
             long, span, long, parent_span, 
-            char *, key, char *, val ),
+            char *, key, char *, val, int, skew),
         
         TP_FIELDS(
                 /*
@@ -46,6 +46,10 @@ TRACEPOINT_EVENT(
                  */
                 ctf_string(key, key)
                 ctf_string(val, val)
+                /*
+                 * Skew in nanosecs from the ntp server
+                 */
+                ctf_integer(int, skew, skew)
         ) 
 )
 TRACEPOINT_LOGLEVEL(
@@ -63,7 +67,7 @@ TRACEPOINT_EVENT(
         TP_ARGS(char *, trace_name, char *, service, 
             int, port, char *, ip, long, trace, 
             long, span, long, parent_span, 
-            char *, event),
+            char *, event, int, skew),
         
         TP_FIELDS(
                 ctf_string(trace_name, trace_name)
@@ -74,6 +78,7 @@ TRACEPOINT_EVENT(
                 ctf_integer(long, span_id, span)
                 ctf_integer(long, parent_span_id, parent_span)
                 ctf_string(event, event)
+                ctf_integer(int, skew, skew)
         ) 
 )
 TRACEPOINT_LOGLEVEL(

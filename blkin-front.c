@@ -36,6 +36,9 @@
 #include <time.h>       /* time */
 #include <unistd.h>
 #include <fcntl.h>                                                              
+#include <sys/mman.h>
+
+#define SKEW_FILE "/var/run/blkin/skew"
                             
 /* Function pointers to be resolved during initialization */
 int (*blkin_init_new_trace)(struct blkin_trace *new_trace, char *name,
@@ -157,23 +160,40 @@ static int initialized = 0;
 
 int blkin_init(void)
 {
-	/*
-	 * Initialize srand with sth appropriete
-	 * time is not good for archipelago: several deamons -> same timstamp
-	 */
-	int inf, seed;                                                              
-	inf = open("/dev/urandom", O_RDONLY); //file descriptor 1                   
-	read(inf, &seed, sizeof(int));    
-	srand(seed);
-	int ret;
-	pthread_mutex_lock(&blkin_init_mutex);
-	if (!initialized) {
-		ret = resolve_symbols();
-		if (ret >= 0) {
-			initialized = 1;
-		}
-	}
-	pthread_mutex_unlock(&blkin_init_mutex);
-	return ret;
+    /*
+     * Initialize srand with sth appropriete
+     * time is not good for archipelago: several deamons -> same timstamp
+     */
+    int inf, seed;                                                              
+    inf = open("/dev/urandom", O_RDONLY); //file descriptor 1                   
+    read(inf, &seed, sizeof(int));    
+    srand(seed);
+
+    /*
+     * initialize skew variable
+     */
+    int fd;
+    if ((fd = open(SKEW_FILE, O_RDONLY)) == -1) {
+        perror("open");
+        exit(1);
+    }
+
+    skew = mmap(0, sizeof(int), PROT_READ, MAP_SHARED, fd, 0);
+    if (skew == MAP_FAILED) {
+        perror("mmap");
+        exit(1);
+    }
+    close(fd);
+
+    int ret;
+    pthread_mutex_lock(&blkin_init_mutex);
+    if (!initialized) {
+        ret = resolve_symbols();
+        if (ret >= 0) {
+            initialized = 1;
+        }
+    }
+    pthread_mutex_unlock(&blkin_init_mutex);
+    return ret;
 
 }

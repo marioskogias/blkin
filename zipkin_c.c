@@ -189,7 +189,7 @@ int _blkin_record(struct blkin_trace *trace, struct blkin_annotation *annotation
                 annotation->annotation_endpoint->ip,
                 trace->info.trace_id, trace->info.span_id,
                 trace->info.parent_span_id,
-                annotation->key, annotation->val);
+                annotation->key, annotation->val, *skew);
     }
     else {
         if (!annotation->val) {
@@ -202,7 +202,7 @@ int _blkin_record(struct blkin_trace *trace, struct blkin_annotation *annotation
                 annotation->annotation_endpoint->ip,
                 trace->info.trace_id, trace->info.span_id,
                 trace->info.parent_span_id,
-                annotation->val);
+                annotation->val, *skew);
     }
     res = 0;
 OUT:

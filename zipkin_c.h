@@ -44,6 +44,8 @@
 		blkin_record(trace, &__annot);				\
 	} while (0);
 
+int *skew;
+
 /**
  * @struct blkin_endpoint
  * Information about an endpoint of our instrumented application where 
