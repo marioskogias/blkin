@@ -24,24 +24,62 @@ being served by RADOS.
 \textbf{Keywords: } tracing, monitoring, low-latency, LTTng, RADOS
 
 \section{Introduction}
-The recent burst of cloud computing has oriented researchers' attention towards
-distributed file systems in an attempt to manipulate the huge load of data being
-produced. Consequently, the need to monitor and trace this kind of distributed 
-systems has aroused. A monitoring tool that could provided information about
-each request's interaction with the storage system would be of vital importance
-since vulnerabilities and latencies of the system would become obvious. However,
-the nature and the purpose of storage systems disables us to use conventional 
-monitoring tools. High-throughput and low-latency are key characteristics of 
-these systems and monitoring should not affect them. Previous approaches to the
-problem either separated the monitoring and tuning phase from the operation 
-phase (first trace the system, tune it and then put it in production), or
-concentrated mostly on per module tracing and did not provide a full stack 
-visualization of the storage request. We present the design and implementation
-of \emph{blkin}. \emph{blkin} is a system that enables us to trace a storage 
-system in real time, with a very low overhead and visualize the aggregated 
-information. We finally provide the results from using \emph{blkin} in tracing
-a software defined storage system \emph{Archipelago}\cite{archip} backed by
-RADOS\cite{rados}.
+
+The recent burst of cloud computing has made distrubuted systems more popular.
+However, debugging or monitoring a distributed system can be a very difficult 
+and demanding job. Dealing with multiple hosts makes the system's behavior 
+unpredicatable and bound to a specific context. Thus, finding failures or 
+bottlenecks cannot be achieved through traditional performance analysis or 
+debugging tools. 
+
+This problem can be tackled through tracing. Tracing caputers the state of the
+system along with other needed information that could provide further insight of
+the exact context that a specific event happened. These information can be 
+correlated so as to explore the system's behavior under different working 
+states. In order to obtain, this kind of information, various instrumentation
+points should be placed in the system's source code informing about the state
+that an event happened.
+
+Nevertheless, tracing a distributed system can be very challenging and various 
+problems may arise. The system should be traced under real working conditions,
+since most of the failures are about to appear then. So, the tracing mechanism
+should not affect significantly the system's performance. Also, since we want to
+explore a distributed system's behavior, we have to deal with multiple hosts and
+events happening almost simulataneously. This sets two different challenges.
+How to qualitatively correlate event information and how to quantitatively 
+correlate time information between different hosts. For the first problem, all
+the traces concerning a specific initial request should be gathered togather
+no matter where they were logged. For the second problem, since we approaching 
+performance analysis as well, the tracing mechanism should take into
+consideration the time differences between the hosts' clocks. These differences
+may be crucial when analyzing time latencies.
+
+Some of the most widespread distributed systems are the distributed storage
+systems. These systems can be used either as huge data warehouses for images,
+videos etc, or as storage backends for virtual volume provisioning for IAAS 
+providers. In any case, their performance analysis and tuning is of vital
+importance since large latencies may end up to an unresponsive system and user
+disatisfaction. In order to debug and monitor such storage systems we need to 
+tackle the aformentioned problems.
+
+In this paper, we present the design and implementation of \emph{blkin}.
+\emph{blkin} is a system that enables us to debug and monitor through tracing
+a distributed storage system in real time, with a very low overhead and 
+visualize the aggregated information. This information caming from cross-layer 
+tracing enables us to explore the system's behavior under various circumstances
+and workloads, since we have at our disposal an accurate, end-to-end
+representation of the request's route from the time it enters the system till
+it is finally served. This enables us to explore the time latencies between the
+different layers and the possible bottlenecks that our system may have. In order
+to fulfil the prereqisites, we make use of \emph{LTTng} (Linux Trace Toolkit -
+next generation)\cite{lttng} for low overhead tracing and the tracing schema
+used in Google's Dapper for tracing information correlation.
+
+As a usecase, we are using \emph{blkin} in tracing a software defined storage 
+system \emph{Archipelago}\cite{archip}. Archipelago is used by Synnefo \cite{synnefo},
+an IAAS provider software and uses RADOS\cite{rados} as a storage backend.
+Concequently, with \emph{blkin} we trace the IO requests from the time they are
+created within the VM, till they are finally served by RADOS.
 
 \section{Tracing logic}
 One of the most important aspects of system tracing is the aggregated 
