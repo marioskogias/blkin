@@ -282,32 +282,39 @@ and database state.
 %  \caption{\emph{blkin} deployment}
 %\end{figure}
 
-\section{Time Synchronization}
+\section{Clock Synchronization}
 
 A crucial matter that needs special treatment when it comes to distrubuted 
-tracing is time synchronization. In a \emph{blkin} cluster deployment, ideally
+tracing is clock synchronization. In a \emph{blkin} cluster deployment, ideally
 we would like to have no time difference between the cluster nodes' clocks, 
-since we are interested in measure latencies and processing durations in the 
+since we are interested in measuring latencies and processing durations in the 
 scale of nanoseconds. So, a possible time skew in the scale of microseconds 
-could result in having a request response virtually happening before its request.
+could result in having a response virtually happening before its request.
 
 In order to solve this problem various solutions have be proposed in the past.
-Before June 2010, when NTP version 4 was published, NTP's precesion was within
-the interval from 100 $\mu$s to 2 ms. Such precision was unacceptable for
-tracing storage systems. So statistical methods were developed. Time skews were
-approximated using arichmetic analysis methods like linear regression. In these
-methods, each node collected traces using its own clock and afterwards, after
-calculating the time differences from a specific node considered anchor, these
-deltas were applied to the traced time information. According to \cite{hp} these
-methods performed well. However, the disadvantage of these methods was the post
+Before 2010 NTP's precesion was within the interval from 100 $\mu$s to 2 ms. 
+Such precision was unacceptable for tracing storage systems. So NTP was 
+abandoned as a clock synchronization mechanism and instead post-tracing 
+statistical methods were developed in order to adjust time differences. Time 
+skews were approximated using arichmetic analysis methods like linear 
+regression. In these methods, each node collected traces using its own clock.
+Afterwards, considering a specific node as achor, time differences from the 
+anchor were calculated for the whole tracing duration for all cluster nodes. 
+For each node, these deltas where interpolated in order to find the best 
+approximation for the time skew througout the tracing session. The new 
+approximated deltas were applied to the collected timestamps in a seperate 
+layer, before the tracing information would be finally stored. According to 
+\cite{hp} these methods performed well. However, their disadvantage was the post
 processing overhead which could be significant for long tracing sessions and the
 fact that live tracing was not possible.
 
-However, the new version of NTP (verion 4) published in June 2010 improved NTP's
-synchronizing potential accuracy to the tens of microseconds with modern 
-workstations and fast LANs. According to our measures,....
-So, using one cluster node as a NTP server, thus exploiting the fast LAN 
-interconnecting the cluster nodes, we can achieve the needed time accuracy.
+However, the new version of NTP (verion 4), published in June 2010, improved 
+NTP's synchronizing potential accuracy to the tens of microseconds with modern 
+workstations and fast LANs. According to our measures, with a LAN communication
+time at about <?>, after <?> NTP's precesion reached <?>.
+So, instread of just using the same global NTP server for all the cluster nodes,
+we used one single cluster node as a NTP server for the rest, thus exploiting 
+the fast LAN  interconnecting the cluster nodes, we achieved the needed accuracy.
  
 \section{Evaluation - Usecase}
 
