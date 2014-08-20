@@ -8,27 +8,27 @@ systems}
 \maketitle
 
 \section*{Abstract}
-Distributed storage systems require special treatment concerning their 
+Distributed storage systems require special treatment concerning their
 monitoring and tracing because of their low-latency and high-throughput demands.
-In this paper we describe the development of a low-impact, live tracing 
+In this paper we describe the development of a low-impact, live tracing
 infrastructure used in monitoring of large scale storage systems. \emph{blkin}
 is a system based on LTTng\cite{lttng} implementing the tracing scheme proposed
-in the Dapper paper\cite{dapper}. Our contribution to the problem includes a 
+in the Dapper paper\cite{dapper}. Our contribution to the problem includes a
 tracing library based on the Dapper semantics targeting low-latency applications
 as well as a proposed architecture for live tracing of such kind applications.
-As a usecase of our system, we decouple and analyze Archipelago\cite{archip} and
-RADOS\cite{rados} measure read/write requests initiated with the VMs that end up
-being served by RADOS.
+As a use case of our system, we decouple and analyze Archipelago\cite{archip}
+and RADOS\cite{rados} measure read/write requests initiated with the VMs that
+end up being served by RADOS.
 
 
 \textbf{Keywords: } tracing, monitoring, low-latency, LTTng, RADOS
 
 \section{Introduction}
 
-The recent burst of cloud computing has made distrubuted systems much more
+The recent burst of cloud computing has made distributed systems much more
 popular. However, debugging or monitoring a distributed system is a difficult
 and demanding job. Dealing with multiple hosts makes the system's behavior
-unpredicatable and bound to a specific context. Thus, finding failures or
+unpredictable and bound to a specific context. Thus, finding failures or
 bottlenecks cannot be achieved through traditional performance analysis or
 debugging tools. 
 
@@ -45,10 +45,10 @@ arise. The system should be traced under real working conditions, since most of
 the failures are about to appear then. So, the tracing mechanism should not
 affect significantly the system's performance. Also, since we want to explore a
 distributed system's behavior, we have to deal with multiple hosts and events
-happening almost simulataneously. This sets two different challenges.  How to
+happening almost simultaneously. This sets two different challenges.  How to
 qualitatively correlate event information and how to quantitatively correlate
 time information between different hosts. For the first problem, all the traces
-concerning a specific initial request should be gathered togather no matter
+concerning a specific initial request should be gathered together no matter
 where they were logged. For the second problem, since we approach performance
 analysis as well, the tracing mechanism should take into consideration the time
 differences between the hosts' clocks. These differences may be crucial when
@@ -59,26 +59,26 @@ systems. These systems can be used either as huge data warehouses for images,
 videos etc, or as storage backends for virtual volume provisioning for IAAS
 providers. In any case, their performance analysis and tuning is of vital
 importance since large latencies may end up to an unresponsive system and user
-disatisfaction. In order to debug and monitor such storage systems we need to
-tackle the aformentioned problems.
+dissatisfaction. In order to debug and monitor such storage systems we need to
+tackle the aforementioned problems.
 
 In this paper, we present the design and implementation of \emph{blkin}.
 \emph{blkin} is a system that enables us to debug and monitor through tracing a
 distributed storage system in real time, with a very low overhead and visualize
-the aggregated information. This information, caming from cross-layer tracing,
+the aggregated information. This information, comig from cross-layer tracing,
 enables us to explore the system's behavior under various circumstances and
 workloads, since we have at our disposal an accurate, end-to-end representation
 of the request's route from the time it enters the system till it is finally
 served. This enables us to explore the time latencies between the different
 layers and the possible bottlenecks that our system may have. In order to fulfil
-the previous prereqisites, we make use of \emph{LTTng} (Linux Trace Toolkit -
+the previous prerequisites, we make use of \emph{LTTng} (Linux Trace Toolkit -
 next generation)\cite{lttng} for low overhead tracing and the tracing schema
 used in Google's Dapper for tracing information correlation.
 
-As a usecase, we are using \emph{blkin} in tracing a software defined storage
+As a use case, we are using \emph{blkin} in tracing a software defined storage
 system \emph{Archipelago}\cite{archip}. Archipelago is used by Synnefo
 \cite{synnefo}, an IAAS provider software and uses RADOS\cite{rados} as storage
-backend. Concequently, with \emph{blkin} we trace the IO requests from the time
+backend. Consequently, with \emph{blkin} we trace the IO requests from the time
 they are created within the VM, till they are finally served by RADOS.
 
 \section{Tracing logic} One of the most important aspects of system tracing is
@@ -94,21 +94,18 @@ implement an annotation-based monitoring scheme.
 
 After examining the nature of distributed storage systems, we found some common
 characteristics that should be taken into consideration when designing an
-end-to-end tracing infrastructure.
-\begin{itemize}
-\item Every request in order to be completed passes through \textbf{different 
-phases} in order to get served. Each phase implements a different functionality.
-Between these distinct phases there is communication overhead crucial to the 
-system's performance that needs to be measured. 
-\item Throughout the serving of the request, \textbf{different nodes} of the 
-infrastructure are activated. These nodes may vary depending on the request.
-Information about the exact time and place of a trace record should also be 
-kept.
-\end{itemize}
+end-to-end tracing infrastructure.  \begin{itemize} \item Every request in order
+to be completed passes through \textbf{different phases} in order to get served.
+Each phase implements a different functionality.  Between these distinct phases
+there is communication overhead crucial to the system's performance that needs
+to be measured.  \item Throughout the serving of the request, \textbf{different
+nodes} of the infrastructure are activated. These nodes may vary depending on
+the request.  Information about the exact time and place of a trace record
+should also be kept.  \end{itemize}
 
-Google proposed a complete annotation-based monitoring scheme in the Dapper 
+Google proposed a complete annotation-based monitoring scheme in the Dapper
 paper\cite{dapper}. This proposed scheme enables us to depict casual
-relationships between the different processing phases. In short, Dapper 
+relationships between the different processing phases. In short, Dapper
 describes the following semantics for tracing:
 \begin{description}
 \item[annotation]
@@ -137,8 +134,8 @@ that may vary depending on the nature and size of each request.
 
 \subsection{Logic implementation} Based on these primitives, Twitter created
 Zipkin\cite{zipkin}, a distributed tracing system used to gather timing data for
-all the disparate services running on their premices. Zipkin consists of a data
-collector, a database service and a Web interface to vizualize the aggregated
+all the disparate services running on their premises. Zipkin consists of a data
+collector, a database service and a Web interface to visualize the aggregated
 data created according to the principles described above.
 
 Zipkin uses Scribe\cite{scribe} to transport all the traces from the different
@@ -158,15 +155,15 @@ elaborate queries. Although Zipkin offers various libraries (Python, Ruby,
 Scala) in order to instrument applications, there was no providence for
 low-latency applications written in C/C++. Our contribution was to create a
 C/C++ library that encapsulates the Dapper semantics and can be used within
-C/C++ projects to create trace information in accordance with the aformentioned
+C/C++ projects to create trace information in accordance with the aforementioned
 logic. This library is designed to be backend-independent, which means that one
 can implement his own log aggregation backend for the library. However, we
 offered a specific backend implementation according to our initial prerequisites
-concenring overhead that is being thoroughly examined in the next chapter.
+concerning overhead that is being thoroughly examined in the next chapter.
 
 \section{Low overhead tracing} As mentioned before, a storage system's
 performance is a crucial matter. Both throughput and latency should be
-uneffected by tracing. So every approach to monitor or trace this kind of
+unaffected by tracing. So every approach to monitor or trace this kind of
 systems should have the least possible added overhead to the instrumented
 application which should continue working properly production-wise. Traditional
 logging systems would fail to tackle this problem, since they tended to separate
@@ -192,7 +189,7 @@ So, \emph{LTTng} enabled us to use the same generic toolkit for both user and
 kernel tracing and it could be easily installed on almost every system needed to
 instrument. 
 
-However, unlike other similar tracing systems (eg. SystemTap\cite{systemtap})
+However, unlike other similar tracing systems (e.g.. SystemTap\cite{systemtap})
 that follow a different approach and are not suitable for monitoring, LTTng adds
 the least possible overhead to the tracing system. LTTng supports static
 tracepoint instrumentation. This means to manually insert tracepoints in the
@@ -240,7 +237,7 @@ server. So we end up with the architecture presented in
 Figure\ref{fig:specific}.
 
 The instrumented application produces tracing information according to the
-Dapper semanctics using our custom made tracing library, through instrumentation
+Dapper semantics using our custom made tracing library, through instrumentation
 points in its source code. These information are aggregated by \emph{LTTng} and
 sent to the \emph{relayd} daemon. This daemon runs either on the same or on a
 different node. After that, our Babeltrace plugin communicates with the
@@ -280,39 +277,40 @@ an inconsistent UI and database state.
 
 \section{Clock Synchronization}
 
-A crucial matter that needs special treatment when it comes to distrubuted
-tracing is clock synchronization. In a \emph{blkin} cluster deployment, ideally
-we would like to have no time difference between the cluster nodes' clocks,
-since we are interested in measuring latencies and processing durations in the
-scale of nanoseconds. So, a possible time skew in the scale of microseconds
-could result in having a response virtually happening before its request.
+A crucial matter that needs special treatment when it comes to distributed
+tracing is clock synchronization. Logical clocks are not enough since we are
+care about real time. In a \emph{blkin} cluster deployment, ideally we would
+like to have no time difference between the cluster nodes' clocks, since we are
+interested in measuring latencies and processing durations in the scale of
+nanoseconds. So, a possible time skew in the scale of microseconds could result
+in having a response virtually happening before its request.
 
 In order to solve this problem various solutions have be proposed in the past.
-Before 2010 NTP's precesion was within the interval from 100 $\mu$s to 2 ms.
+Before 2010 NTP's precession was within the interval from 100 $\mu$s to 2 ms.
 Such precision was unacceptable for tracing storage systems. So NTP was
 abandoned as a clock synchronization mechanism and instead post-tracing
 statistical methods were developed in order to adjust time differences. Time
-skews were approximated using arichmetic analysis methods like linear
+skews were approximated using arithmetic analysis methods like linear
 regression. In these methods, each node collected traces using its own clock.
-Afterwards, considering a specific node as achor, time differences from the
+Afterwards, considering a specific node as anchor, time differences from the
 anchor were calculated for the whole tracing duration for all cluster nodes.
 For each node, these deltas where interpolated in order to find the best
-approximation for the time skew througout the tracing session. The new
-approximated deltas were applied to the collected timestamps in a seperate
+approximation for the time skew throughout the tracing session. The new
+approximated deltas were applied to the collected timestamps in a separate
 layer, before the tracing information would be finally stored. According to
 \cite{hp} these methods performed well. However, their disadvantage was the post
 processing overhead which could be significant for long tracing sessions and the
 fact that live tracing was not possible.
 
-However, the new version of NTP (verion 4), published in June 2010, improved
+However, the new version of NTP (version 4), published in June 2010, improved
 NTP's synchronizing potential accuracy to the tens of microseconds with modern
-workstations and fast LANs. According to our measures, with a LAN communication
-time at about <?>, after <?> NTP's precesion reached <?>.  So, instread of just
-using the same global NTP server for all the cluster nodes, we used one single
-cluster node as a NTP server for the rest, thus exploiting the fast LAN
-interconnecting the cluster nodes, we achieved the needed accuracy.
+workstations and fast LANs. According to our measures, with a LAN roundtrip of
+200 $\mu$s, after few days NTP's precession reached the scale of few $\mu$s.
+So, instead of just using the same global NTP server for all the cluster nodes,
+we used one single cluster node as a NTP server for the rest, thus exploiting
+the fast LAN interconnecting the cluster nodes, we achieved the needed accuracy.
  
-\section{Evaluation - Usecase}
+\section{Evaluation - Use case}
 
 In order to evaluate our system and our tracing model's expressiveness, we
 instrumented \emph{Archipelago}\cite{archip}. Archipelago is a distributed
