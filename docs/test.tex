@@ -312,7 +312,41 @@ using the same global NTP server for all the cluster nodes, we used one single
 cluster node serving as NTP server for the rest. Thus exploiting the fast LAN
 interconnecting the cluster nodes, we achieved the needed accuracy.
  
-\section{Evaluation - Usecase}
+\section{Evaluation - Usecase} In order to evaluate BlkKin's performance and
+expressiveness we used it in Archipelago and RADOS. So, we added instrumentation
+points within the Archipelago and RADOS code that noted the seperate phases that
+the IO request passed through as well as all the needed information concerning
+the specific request, like the object name, the request type (read,write) and
+its size. There is also a QEMU driver for Archipelago that exports an Archipelgo
+volume in the virtual machine. We added instrumentation points in this driver as
+well. So the first phase of the IO request processing was the QEMU layer, then
+we had the Archipelago layers (vlmc, mapper, rados blocker) and finally the
+RADOS part where we separated the operation handling per OSD, the journal
+access, the filestore access, the replication etc.
+
+We ran benchmarks to evaluate the added overead that BlkKin imposes on
+Archipelago and RADOS. For example imitating an IOZone workload we measured the
+throughput of 1GB of 64KB sequential writes without intrumentation points and
+with instrumentation points with enabled and disabled tracing, since LTTng can
+stop the tracing session without affecting the application and start it again if
+needed. The results can be seen in the table. To justify the extra overhead, every IO requests triggered 113 different
+tracepoints
+
+\begin{center}
+\begin{tabular}{| l | p{3cm} | p{2cm} |}
+    \hline
+    Mode & Throughput(MB/s) & Latency/Op (ms)  \\ \hline
+    not instrumented & 12.7 & 5.16  \\ \hline
+    instrumented stopped & 11.8 &  5.56  \\ \hline
+    instrumented & 11 & 5.94  \\ 
+    \hline
+    \end{tabular}
+\end{center}
+Apart from the Zipkin UI that gave as an overall impression about the systems'
+performance and bottlenecks, using simple SQL-queries we were able to calculate
+average metrics like each layer's duration, the communication latency between
+Archipelago and RADOS or the time that a request stayed in RADOS's dispatch
+queue before being served.   
 
 \begin{thebibliography}{9}
 \bibitem{rados}
