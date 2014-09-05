@@ -1,9 +1,17 @@
 \documentclass[a4paper,10pt,twocolumn]{article}
 
 \usepackage{graphicx}
+\usepackage{authblk}
 \begin{document}
-\title{\emph{BlkKin}: An end-to-end tracing tool for software defined storage 
-systems}
+\title{\emph{BlkKin}: An End-to-end Tracing Tool for Software Defined Storage 
+Systems}
+\author[1]{Marios-Evangelos Kogias}
+\author[1]{Filippos Giannakos}
+\author[1]{Vangelis Koukis}
+\author[2]{Constantinos Venetsanopoulos}
+\author[1]{Nectarios Koziris}
+\affil[1]{National Technical University of Athens}
+\affil[2]{~okeanos grnet}
 \date{}
 \maketitle
 
@@ -29,63 +37,52 @@ until they were finally served by RADOS.
 \section{Introduction}
 
 The more complex the distributed systems are becoming today, the greater grows
-the need for better debugging and monitoring tools. However, debugging or
-monitoring a distributed system is a difficult and demanding job. Dealing with
-multiple hosts makes the system's behavior unpredictable and bound to a specific
-context that could change from execution to execution. Thus, finding failures or
-bottlenecks cannot be achieved through traditional performance analysis or
-debugging tools. 
+the need for better debugging and monitoring tools. Debugging or monitoring a
+distributed system is a difficult and demanding job. Dealing with multiple hosts
+makes the system's behavior unpredictable and bound to a specific context that
+could change from execution to execution. Thus, finding failures or bottlenecks
+cannot be achieved through traditional monitoring or debugging tools like syslog
+or gdb.  
 
 This problem can be tackled through tracing. Tracing captures the state of the
-system along with other needed information that could provide further insight of
-the exact context that a specific event happened. These information can be
+system along with other needed information that could provide further insight on
+the exact context in which a specific event happened. The information can be
 correlated to explore the system's behavior under different working states.
-Unlike traditional monitoring that could be achieved out of the box, in order to
-obtain, this kind of information, instrumentation points should be placed in the
-system's source code indicating the events to be traced and the values to be
-measured.
+Unlike traditional monitoring, to obtain this kind of information,
+instrumentation points need to be placed in the system's source code indicating
+the events to be traced and the values to be measured. Through this
+instrumentation we want to trace \textbf{causal relationships} between distinct
+software layers, communication \textbf{latencies} and \textbf{bottlenecks},
+unknown \textbf{execution paths}.
 
-Tracing a distributed system can be very challenging and various problems may
-arise. In order for the tracing to be valuable, the system should be traced
-under real working conditions, since most of the failures are about to appear at
-full load. So, ideally we would like to have a fully functional system working
-at production scale that is getting traced at the same time. So, the tracing
-mechanism should not affect the system's performance significantly. Also, since
-we want to explore a distributed system's behavior, we have to deal with
-multiple hosts and events happening almost simultaneously. This sets two
-different challenges. How to qualitatively correlate event information and how
-to quantitatively correlate time information between different hosts. For the
-first problem, a certain mechanism should group together all the traces
-concerning a specific initial request. For the second problem, since we approach
-performance analysis as well, the tracing mechanism should handle the time
-differences between the hosts' clocks and try to eliminate them. These
-differences may be crucial when analyzing time latencies.
+Distributed tracing sets the following challenges. The system should be traced
+under real working conditions, since most of the failures are more likely to
+appear at full load. So, ideally we want to have a fully functional system
+working at production scale that is getting traced at the same time. So, the
+tracing mechanism should not affect the system's performance significantly.
+Also, we have to deal with multiple hosts and events happening almost
+simultaneously. We need a mechanism that qualitatively correlates distributed
+event information, namely a way to group correlated, tracing information.
+Finally, we need to handle with the absence of a global clock.
 
 Some of the most widespread distributed systems are the distributed storage
-systems. These systems can be used either as huge data warehouses for images,
-videos etc, or as storage backends for virtual volume provisioning employed by
-IAAS providers. In any case, their performance analysis and tuning is of vital
-importance since large latencies may end up to an unresponsive system and user
-dissatisfaction.
+systems. They can be used either as huge data warehouses for content like images
+or videos, or as storage backends for virtual volume provisioning employed by
+IaaS providers. In any case, their performance analysis and tuning is of vital
+importance for better resource usage and faster, responsive services.
 
 In this paper, we present the design and implementation of \emph{BlkKin}.
-\emph{BlkKing} is a system that enables us to debug and monitor through tracing
-a distributed storage system in real time, with a very low overhead and
-visualize the aggregated information. This information, coming from cross-layer
-tracing, enables us to explore the system's behavior under various circumstances
-and workloads, since we have at our disposal an accurate, end-to-end
-representation of the request's route from the time it enters the system till it
-is finally served revealing time latencies between the different layers and the
-possible bottlenecks that our system may have. In order to fulfil the previous
-prerequisites, we make use of \emph{LTTng} (Linux Trace Toolkit - next
-generation)\cite{lttng} for low overhead tracing and the tracing schema used in
-Google's Dapper for tracing information correlation.
-
-As a use-case, we are using \emph{BlkKin} in tracing a software defined storage
-system \emph{Archipelago}\cite{archip}. Archipelago is used by Synnefo
-\cite{synnefo}, an IAAS provider software and uses RADOS\cite{rados} as storage
-backend. Consequently, with \emph{BlkKin} we trace the IO requests from the time
-they are created within the VM, till they are finally served by RADOS.
+BlkKin is a system that enables us to debug and monitor through tracing a
+distributed storage system in real time, with very low overhead and visualize
+the aggregated information. To build BlkKin we combine various open-source
+technologies. We use LTTng as tracing backend per host and we extend it to
+communicate in real time with Zipkin, a Twitter, open-source implementation of
+Dapper\cite{}. We also extend it Archipelago\cite{} and RADOS\cite{} to support
+cross-layer tracing using BlkKin. Basically, this means that an IO request is
+associated with a specific id which is propagated with the request until it is
+finally served. So, we end up with a visualization of the request's route from
+the time it is initiated within a virtual machine until it is served by RADOS,
+accompanied with meaningful information like request type or object name.
 
 \section{Tracing logic} One of the most important aspects of system tracing is
 the aggregated information correlation and interpretation. There are two
