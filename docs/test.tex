@@ -19,18 +19,17 @@ Computing Systems Laboratory}
 
 \section*{Abstract}
 Distributed storage systems require special treatment concerning their
-monitoring and tracing. The need for production-scale, live tracing arises
-since under these circumstances, interesting and problematic behaviors are most
-likely to become obvious. However, this need in conjunction with low-latency
-and high-throughput demands set further challenges, apart from the initial ones
-concerning distributed tracing like clock synchronization and trace
-correlation.  BlkKin is a tracing infrastructure used for software-defined
-storage systems' live tracing. It inserts minimal overhead to the instrumented
-system and it provides a Web UI for data visualization. BlkKin gives us an
-end-to-end system representation and metrics which enables us to extract
-information on how does the system performs, either per module or as a whole,
-per request, under different workloads. 
-
+monitoring and tracing. BlkKin provides the necessary infrastructure for tracing
+software-defined storage systems. It enables live tracing and inserts minimal
+overhead to the instrumented system, so that it can continue working effectively
+in production scale. Its tracing semantics lead to a cross-layered, end-to-end
+representation of the system and how the IO requests interact with it.
+End-to-end request tracing enables elaborate information extraction concerning
+specific system parts, specific workloads or specific system resources, allowing
+the, otherwise impossible, location of latencies and bottlenecks. 
+%BlkKin provides a full stack implementation with a data collector, data
+%aggregator and a Web UI for visualizing the tracing information can be easily
+%incorporated by any system in need of such a tracing framework.
 
 \textbf{Keywords: } tracing, monitoring, low-latency, LTTng, RADOS
 
@@ -38,11 +37,10 @@ per request, under different workloads.
 
 The more complex the distributed systems are becoming today, the greater grows
 the need for better debugging and monitoring tools. Debugging or monitoring a
-distributed system is a difficult and demanding job. Dealing with multiple hosts
-makes the system's behavior unpredictable and bound to a specific context that
-could change from execution to execution. Thus, finding failures or bottlenecks
-cannot be achieved through traditional monitoring or debugging tools like syslog
-or gdb.  
+distributed system is a difficult and demanding job. Traditional monitoring or
+debugging tools like syslog or gdb fail to locate failures or bottlenecks
+because dealing with multiple hosts makes the system's behavior unpredictable
+and bound to a specific context that could change from execution to execution.
 
 This problem can be tackled through tracing. Tracing captures the state of the
 system along with other needed information that could provide further insight
@@ -55,15 +53,14 @@ instrumentation we want to trace \textbf{causal relationships} between distinct
 software layers, \textbf{latencies} and \textbf{bottlenecks}, as well as
 unknown \textbf{execution paths}.
 
-Distributed tracing sets the following challenges. The system should be traced
-under real working conditions, since most of the failures are more likely to
-appear at full load. So, ideally we want to have a fully functional system
-working at production scale that is getting traced at the same time.
-Consequently, the tracing mechanism should not affect the system's performance
-significantly.  Also, we have to deal with multiple hosts and events happening
-almost simultaneously. We need a mechanism that qualitatively correlates
-distributed event information, namely a way to group correlated, tracing
-information. Finally, we need to handle with the absence of a global clock.
+Distributed tracing sets the following challenges. Most of the failures are most
+likely to appear at full load. This creates the need for live-tracing under real
+working conditions. Ideally we want to have a fully functional system working at
+production scale that is getting traced at the same time. Consequently, the
+tracing mechanism should not affect the system's performance significantly.
+Also, we have to deal with multiple hosts and events happening almost
+simultaneously. We need a mechanism that groups scattered but correlated tracing
+information and handles with the absence of a global clock.
 
 Some of the most widespread distributed systems are the distributed storage
 systems. They can be used either as huge data warehouses for content like images
@@ -79,18 +76,20 @@ technologies. We use LTTng (Linux Trace Toolkit - next
 generation)\footnote{http://lttng.org/} as tracing backend per host and we
 extend it to communicate in real time with
 Zipkin\footnote{http://twitter.github.io/zipkin/}, a Twitter's, open-source
-implementation of Google's Dapper\cite{dapper}. We created a C/C++ library
-to instrument applications according the semantics described in \cite{dapper}
-and using this library we extended Archipelago\cite{archip} and
-RADOS\cite{rados} to support cross-layer tracing using BlkKin. Basically, this
-means that an IO request is associated with a specific id which is propagated
-within the infrastructure until the request is finally served. So, we end up
-with a visualization of the request's route from the time it is initiated
-within a virtual machine until it is served by RADOS, accompanied with
-meaningful information like request type or the target object's name.
+implementation of Google's Dapper\cite{dapper}. We created a C/C++ library to
+instrument applications according to the semantics described in \cite{dapper}.
+Using this library we extended Archipelago\cite{archip} and RADOS\cite{rados} to
+support cross-layer tracing, achieving to track any IO request, with an id which
+is propagated within the infrastructure, from its creation
+till its completion. Apart from the visualization part, this enables us to
+extract aggregate time information either per systems' module or per specific
+workload.
 
-Other approaches, like Ganglia\cite{ganglia}, were more monitoring oriented
-while others like Stardust\cite{stardust} or \cite{hp}, did not provide live
+Related work on the aforementioned problem can be divided into two categories.
+There are tools like like Ganglia\cite{ganglia} or
+ELK\footnote{http://www.elasticsearch.org/overview/} that are more monitoring
+oriented. On the other hand, tools like Stardust\cite{stardust} or \cite{hp}
+concentrated mostly on tracing and track capturing and did not provide live
 tracing.
  
 \section{Background}
@@ -207,17 +206,17 @@ each request was served. Consequently, since since we chose to implement the
 Dapper tracing semantics, static tracing was the only way to do that.
 
 Finally, live tracing is a prerequisite. Although live monitoring may seem
-natural for systems like ELK\footnote{http://www.elasticsearch.org/overview/},
-live tracing in combination with low-overhead was not possible. Older tracing
-approaches required separation between the tracing and operation phases. This
-happened either because tracing added a lot of extra overhead to the
-instrumented system so it could not continue working production-wise, or
-because tracing information was not in a state that could be processed before
-the end of the tracing session. For LTTng especially, tracing data were in a
-binary form that could be decoded only after the end of the tracing session.
-However, since version 2.4 of LTTng there is also live tracing support. Using a
-daemon called \emph{realyd}, tracing data can be streamed over TCP forming
-batch TCP packets and processed while the tracing session is still in progress. 
+natural for systems like ELK\footnote, live tracing in combination with
+low-overhead was not possible. Older tracing approaches required separation
+between the tracing and operation phases. This happened either because tracing
+added a lot of extra overhead to the instrumented system so it could not
+continue working production-wise, or because tracing information was not in a
+state that could be processed before the end of the tracing session. For LTTng
+especially, tracing data were in a binary form that could be decoded only after
+the end of the tracing session.  However, since version 2.4 of LTTng there is
+also live tracing support. Using a daemon called \emph{realyd}, tracing data can
+be streamed over TCP forming batch TCP packets and processed while the tracing
+session is still in progress. 
 
 \section{Design}
 As mentioned, BlkKin was designed respecting four prerequisites:
@@ -315,7 +314,7 @@ size.
 
 \section{Evaluation - Conclusion} 
 
-We ran benchmarks to evaluate the added overhead that BlkKin imposes on
+We ran benchmarks to evaluate the added overhead that BlkKin poses on
 Archipelago and RADOS. For example imitating an IOZone workload we measured the
 throughput of 1GB of 64KB sequential writes without instrumentation points and
 with instrumentation points with enabled and disabled tracing, since LTTng can
@@ -337,13 +336,14 @@ So, the layered multi-node architecture shown in Figure \ref{fig:archipelago},
 after being traced with BlkKin, ends up as shown in Figure \ref{fig:zipkin} in
 the Zipkin UI. Each bar represents a distinct processing phase.
 
+\begin{center}
 \begin{figure}[h!]
   \centering
   \includegraphics[scale=0.15]{images/zipkin.png}
-  \caption{Archipelago overview}
+  \caption{Zipkin UI}
   \label{fig:zipkin}
 \end{figure}
-
+\end{center}
 Apart from the UI that gave as an overall impression about the systems'
 performance and bottlenecks, using simple SQL-queries we were able to calculate
 average metrics like each layer's duration, the communication latency between
