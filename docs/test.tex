@@ -17,19 +17,17 @@ Systems}
 
 \section*{Abstract}
 Distributed storage systems require special treatment concerning their
-monitoring and tracing. The need for production scale live tracing arises since
-under these circumstances, interesting and problematic behaviors are most likely
-to become obvious. However, this need in conjunction with low-latency and
-high-throughput demands set further challenges, apart from the initial ones
-concerning distributed tracing like clock synchronization and trace correlation.
-
-In this paper we describe the development of a low-impact, live tracing
-infrastructure used in monitoring large scale storage systems. \emph{BlkKin} is
-a system based on LTTng\cite{lttng}, implementing the tracing schema proposed in
-the Dapper paper\cite{dapper}. We have successfully used \emph{blkin} in a
-software defined storage system called Archipelago\cite{archip} and  backed by
-RADOS\cite{rados}. We traced and measured IO requests initiated within the VMs
-until they were finally served by RADOS.
+monitoring and tracing. The need for production-scale, live tracing arises
+since under these circumstances, interesting and problematic behaviors are most
+likely to become obvious. However, this need in conjunction with low-latency
+and high-throughput demands set further challenges, apart from the initial ones
+concerning distributed tracing like clock synchronization and trace
+correlation.  BlkKin is a tracing infrastructure used for software-defined
+storage systems' live tracing. It inserts minimal overhead to the instrumented
+system and it provides a Web UI for data visualization. BlkKin gives us an
+end-to-end system representation and metrics which enables us to extract
+information on how does the system performs, either per module or as a whole,
+per request, under different workloads. 
 
 
 \textbf{Keywords: } tracing, monitoring, low-latency, LTTng, RADOS
@@ -45,25 +43,25 @@ cannot be achieved through traditional monitoring or debugging tools like syslog
 or gdb.  
 
 This problem can be tackled through tracing. Tracing captures the state of the
-system along with other needed information that could provide further insight on
-the exact context in which a specific event happened. The information can be
+system along with other needed information that could provide further insight
+on the exact context in which a specific event happened. The information can be
 correlated to explore the system's behavior under different working states.
 Unlike traditional monitoring, to obtain this kind of information,
 instrumentation points need to be placed in the system's source code indicating
 the events to be traced and the values to be measured. Through this
 instrumentation we want to trace \textbf{causal relationships} between distinct
-software layers, communication \textbf{latencies} and \textbf{bottlenecks},
+software layers, \textbf{latencies} and \textbf{bottlenecks}, as well as
 unknown \textbf{execution paths}.
 
 Distributed tracing sets the following challenges. The system should be traced
 under real working conditions, since most of the failures are more likely to
 appear at full load. So, ideally we want to have a fully functional system
-working at production scale that is getting traced at the same time. So, the
-tracing mechanism should not affect the system's performance significantly.
-Also, we have to deal with multiple hosts and events happening almost
-simultaneously. We need a mechanism that qualitatively correlates distributed
-event information, namely a way to group correlated, tracing information.
-Finally, we need to handle with the absence of a global clock.
+working at production scale that is getting traced at the same time.
+Consequently, the tracing mechanism should not affect the system's performance
+significantly.  Also, we have to deal with multiple hosts and events happening
+almost simultaneously. We need a mechanism that qualitatively correlates
+distributed event information, namely a way to group correlated, tracing
+information. Finally, we need to handle with the absence of a global clock.
 
 Some of the most widespread distributed systems are the distributed storage
 systems. They can be used either as huge data warehouses for content like images
@@ -75,45 +73,56 @@ In this paper, we present the design and implementation of \emph{BlkKin}.
 BlkKin is a system that enables us to debug and monitor through tracing a
 distributed storage system in real time, with very low overhead and visualize
 the aggregated information. To build BlkKin we combine various open-source
-technologies. We use LTTng as tracing backend per host and we extend it to
-communicate in real time with Zipkin, a Twitter, open-source implementation of
-Dapper\cite{}. We also extend it Archipelago\cite{} and RADOS\cite{} to support
-cross-layer tracing using BlkKin. Basically, this means that an IO request is
-associated with a specific id which is propagated with the request until it is
-finally served. So, we end up with a visualization of the request's route from
-the time it is initiated within a virtual machine until it is served by RADOS,
-accompanied with meaningful information like request type or object name.
+technologies. We use LTTng (Linux Trace Toolkit - next
+generation)\footnote{http://lttng.org/} as tracing backend per host and we
+extend it to communicate in real time with
+Zipkin\footnote{http://twitter.github.io/zipkin/}, a Twitter's, open-source
+implementation of Google's Dapper\cite{dapper}. We created a C/C++ library
+to instrument applications according the semantics described in \cite{dapper}
+and using this library we extended Archipelago\cite{archip} and
+RADOS\cite{rados} to support cross-layer tracing using BlkKin. Basically, this
+means that an IO request is associated with a specific id which is propagated
+within the infrastructure until the request is finally served. So, we end up
+with a visualization of the request's route from the time it is initiated
+within a virtual machine until it is served by RADOS, accompanied with
+meaningful information like request type or the target object's name.
 
-\section{Tracing logic} One of the most important aspects of system tracing is
-the aggregated information correlation and interpretation. There are two
-dominant schools concerning tracing information interpretation. \emph{Black box}
-monitoring scheme assumes there is no additional information other than the
-message record. So statistical regression techniques should be used to infer any
-existent association. \emph{Annotation-based} schemes, on the other hand, rely
-on applications or middleware to explicitly tag every record with a global
-identifier that links these message records back to the originating request. In
-order to have an overall review of the system per specific request, we have to
-implement an annotation-based monitoring scheme.
+Other approaches, like Ganglia\cite{ganglia}, were more monitoring oriented
+while others like Stardust\cite{stardust} or \cite{hp}, did not provide live
+tracing.
+ 
+\section{Background}
+In this section we describe why we used Zipkin and LTTng as BlkKin's building
+blocks.
 
-In order to capture the information needed for the end-to-end tracing, our
-tracing schema should be able firstly to group all the traces belonging to the
-same request and secondly depict the causal relationships between the different
-layers, taking into account that the system is distributed, thus providing
-information about the hosts. Also, it should enable us to collect any other
-information considered important, by though custom data annotations.
+\subsection{Tracing logic}
+According to \cite{dapper} there are two dominant schools in associating all
+record entries with a given initiator. \emph{Black box} monitoring scheme
+assumes there is no additional information other than the message record. So
+statistical regression techniques should be used to infer any existing
+association. \emph{Annotation-based} schemes, though, rely on applications or
+middleware to explicitly tag every record with a global identifier that links
+these message records back to the originating request. 
 
-Google proposed a complete annotation-based monitoring scheme in the Dapper
-paper\cite{dapper}. This proposed scheme meets our mentioned demands and was
-chosen to used in \emph{BlkKin}. In short, Dapper describes the following
-semantics for tracing:
+For our needed, overall review of the system per specific request, we had to
+implement an annotation-based monitoring scheme. In addition, this scheme needs
+to depict the causal relationships between the different layers, taking into
+account that the system is distributed, thus providing information about the
+hosts. Finally, it should enable us to collect any other information considered
+important and not restrict us to time data.
+
+Google proposed a complete annotation-based scheme in \cite{dapper}.
+This scheme meets the aforementioned demands and is used in
+BlkKin. \cite{dapper} describes the following concepts for tracing:
+
 \begin{description}
 \item[annotation]
 The actual information being logged. There are two kinds of annotations. Either
-\emph{timestamp}, where the specific timestamp of an event is being logged or 
+\emph{timestamp}, where the specific timestamp of an event is being logged or
 \emph{key-value}, where a specific key-value pair is being logged.
 \item[span]
-The basic unit of the process tree. Each specific processing phase can be 
-depicted as a different span. Each span should have a specific name and a 
+The basic unit of the process tree. Each specific processing phase can be
+depicted as a different span. Each span should have a specific name and a
 distinct span id.
 \item[trace]
 Every span is associated with a specific trace. A different trace id is used to
@@ -128,206 +137,188 @@ trace, parent span id is used. Spans without a parent span ids are  known as
 
 So, by creating tracing data according to these semantics we can have an
 end-to-end sense of our system's performance, behavior and internal latencies
-that may vary depending on the nature and size of each request that can also be
-captured using key-value annotations for example.
+that may vary depending on the nature and size of each request which can also
+be captured using key-value annotations.
 
 \subsection{Logic implementation} Based on these primitives, Twitter created
-Zipkin\cite{zipkin}, a distributed tracing system used to gather timing data for
-all the disparate services running on their premises. Zipkin consists of a data
-collector, a database service and a Web interface to visualize the aggregated
-data, created according to the principles described above.
+Zipkin, a distributed tracing system used to gather timing data for all the
+disparate services running on their premises. Zipkin consists of a data
+collector, a database service, with support for a variety of SQL and NoSQL
+databases, and a Web interface to visualize the aggregated data.
 
-Zipkin uses Scribe\cite{scribe} to transport traces from the different services.
-Scribe is a logging server created by Facebook, aiming to be scalable and
-reliable. Scribe servers are arranged in a directed graph, with each server
-knowing only about the next server in the graph. This network topology allows
-for adding extra layers of fan-in, as a system grows and batching messages
-before sending them between datacenters as well as providing reliability in case
-of intermittent connectivity or node failure. Scribe makes use of
-Thrift\cite{thift} for data transfer.
+Zipkin uses Scribe\cite{scribe} to transport traces from the different services
+to the central collector. Scribe is a logging server created by Facebook,
+aiming to be scalable and reliable.  Scribe servers are arranged in a directed
+graph, with each server knowing only about the next server in the graph. This
+network topology allows for adding extra layers of fan-in, as a system grows
+and batching messages before sending them between datacenters as well as
+providing reliability in case of intermittent connectivity or node failure.
+Scribe makes use of the Thrift protocol\cite{thrift} for data transfer.
 
-Zipkin seemed to fit our demands concerning data collection since it is designed
-to scale. Also, the used SQL-schema was adequate to capture and query all the
-needed tracing information and finally, the Web UI offered us descriptive
-visualization of the traces, apart from the SQL-interface used for more
-elaborate queries. Although Zipkin offers various libraries (Python, Ruby,
-Scala) in order to instrument applications, there was no providence for
-low-latency applications written in C/C++. Our contribution was to create a
-C/C++ library that encapsulates the Dapper semantics and can be used within
-C/C++ projects to create trace information in accordance with the Dapper logic.
-This library is designed to be backend-independent, which means that one can
-implement his own log aggregation backend for the library. However, we offered a
-specific backend implementation according to our initial prerequisites
-concerning overhead that is being thoroughly examined in the next chapter.
+Zipkin seemed to fit our demands concerning data collection since it is
+designed to scale. Also, apart from the Web UI, we could execute ad-hoc queries
+on the database for more elaborate information extraction, without the need for
+batch processing Map-Reduce jobs. However, Zipkin did not provide any C/C++
+library to instrument low-overhead applications. The offered libraries were in
+scripting languages like Ruby, or in Java and Scala. We created a C/C++ library
+that encapsulates the Dapper semantics and can be used within C/C++ projects to
+create trace information in accordance with the Dapper logic.  This library is
+designed to be backend-independent, which means that one can implement his own
+log aggregation backend.  However, we offered a specific backend implementation
+according to our initial prerequisites concerning overhead, based on LTTng that
+is being thoroughly examined in the next chapter.
 
-\section{Low overhead tracing} As mentioned before, a storage system's
-performance is a crucial matter. Both throughput and latency should be
-unaffected by tracing. So every approach to monitor or trace this kind of
-systems should have the least possible added overhead to the instrumented
-application which should continue working properly production-wise.
+\subsection{Tracing Backend}
 
-\subsection{Tracing backend} \emph{BlkKin} was designed driven by this strict
-low-overhead and production-wise operation prerequisite. So the first important
-decision to make concerned the system that would implement the system's backend,
-namely the system that would run on every cluster node and would be responsible
-for aggregating tracing data from the instrumented applications. So we chose to
-use \emph{LTTng} (Linux Trace Toolkit - next generation)\cite{lttng} in our
-system backend.
+BlkKin's design was driven by a strict low-overhead and production-wise
+operation prerequisite. So the first important decision to make concerned the
+system that would implement the system's backend, namely the system that would
+run on every cluster node and be responsible for aggregating tracing data from
+the instrumented applications. We chose to use LTTng in our system's backend.
 
-\emph{LTTng} is a toolchain that allows integrated kernel and user-space tracing
-from a single user interface. \emph{LTTng} was initially designed and
-implemented to reproduce, under tracing, problems occurring in normal
-conditions. It encapsulates synchronization primitives that meet the low-impact
-requirements by using a linearly scalable and wait-free RCU (Read-Copy Update)
-synchronization mechanism. This mechanism was implemented in kernel and then
-ported to userspace as well. In addition, \emph{LTTng} supports a variety of
-operating systems (Debian, Fedora, Arch) and since version 2.x kernel tracer
+LTTng is a toolchain that allows integrated kernel and user-space tracing from
+a single user interface. It was initially designed and implemented to
+reproduce, under tracing, problems occurring in normal conditions. It uses a
+linearly scalable and wait-free RCU (Read-Copy Update) synchronization
+mechanism and provides zero-copy data extraction. These mechanisms were
+implemented in kernel and then ported to user-space as well. In addition, LTTng
+supports a variety of Linux distributions and since version 2.x kernel tracer
 modules are built against a vanilla or distribution kernel, without need for
-additional patches.  So, \emph{LTTng} satisfied our prerequisites concerning
-overhead and enabled us to use the same generic toolkit for both user and kernel
-tracing while being easily installed on almost every system needed to
-instrument. 
+additional patches. The nanosecond-scale added overhead per event traced
+mentioned in \cite{desnoyer}, convienced us to use LTTng and have the same
+generic toolkit for both user and kernel tracing, wchich can be easily
+installed on almost every system needed to instrument. 
 
-LTTng supports static tracepoint instrumentation. This means to manually insert
-tracepoints in the application source code and rebuild the application. After
-rebuilt, these tracepoints will breakpoint-less and system-call-less produce the
-described traces as far as userspace is concerned. As far a kernel-space is
-concerned, LTTng is supported by kprobes and kernel markers. Thus LTTng does not
-significantly affect the system's performance and is ideal to operate as backend
-for our C/C++ tracing library mentioned before. Although the whole process of
-recompiling the instrumented application may seem counterproductive, static
-instrumentation abilities are limitless. Based on the knowledge and
-understanding of the application, one can instrument and trace every part that
-might be problematic or causing longer latencies, as well as extracting all the
-information needed to fully understand under which context each request was
-served. Consequently, since since we wanted to implement the Dapper tracing
-semantics, static tracing was the only way to do that.
+Concerning user-space tracing, LTTng supports static tracepoint
+instrumentation.  This means to manually insert tracepoints in the application
+source code and rebuild the application. After rebuilt, these tracepoints will
+get triggered during execution and produce the described traces, without
+breakpoints or system-calls. As far a kernel-space is concerned, LTTng is
+supported by kprobes\cite{kprobes} and kernel markers\cite{kmarkers}. Thus
+LTTng does not significantly affect the system's performance. Although the
+whole process of recompiling the instrumented application may seem
+counterproductive, static instrumentation abilities are limitless. Based on the
+knowledge and understanding of the application, one can instrument and trace
+every part that might be problematic or causing longer latencies, as well as
+extracting all the information needed to fully understand under which context
+each request was served. Consequently, since since we chose to implement the
+Dapper tracing semantics, static tracing was the only way to do that.
 
-\subsection{Live tracing} 
-As mentioned before, performance tracing should happen while the system operates
-in production. All the vulnerabilities, faults, or bottlenecks would become
-obvious in a production environment. This would mean to trace a production
-system and in real time have access and process the aggregated information,
-without separating the tracing from the operating phase. Although this may sound
-natural for traditional logging systems like syslog, in combination with the
-demand for low-impact tracing, several difficulties arise. Older tracing
+Finally, live tracing is a prerequisite. Although live monitoring may seem
+natural for systems like ELK\footnote{http://www.elasticsearch.org/overview/},
+live tracing in combination with low-overhead was not possible. Older tracing
 approaches required separation between the tracing and operation phases. This
 happened either because tracing added a lot of extra overhead to the
-instrumented system so it could not continue working production-wise, or because
-tracing information was not in a state that could be processed before the end of
-the tracing session. For LTTng especially, tracing data were in a binary form
-that could be decoded only after the end of the tracing session. 
+instrumented system so it could not continue working production-wise, or
+because tracing information was not in a state that could be processed before
+the end of the tracing session. For LTTng especially, tracing data were in a
+binary form that could be decoded only after the end of the tracing session.
+However, since version 2.4 of LTTng there is also live tracing support. Using a
+daemon called \emph{realyd}, tracing data can be streamed over TCP forming
+batch TCP packets and processed while the tracing session is still in progress. 
 
-\subsubsection{Infrastructure} Since version 2.4 of \emph{LTTng}, live tracing
-is possible. Tracing data can be streamed, decoded and processed in real time
-using a daemon process called \emph{relayd} that collects the tracing data over
-the network using batch TCP packets.  
+\section{Design}
+As mentioned, BlkKin was designed respecting four prerequisites:
+\textbf{low-overhead tracing}, \textbf{live tracing}, \textbf{Dapper semantics}
+and \textbf{Web UI}.
 
-However, \emph{LTTng} live tracing supports only its native CTF format.
-Consequently, in order to be able to process and visualize tracing data in real
-time with Zipkin, we needed to implement a live-tracing plugin that would
-transform in real time CTF data to Scribe messages sent to either a local or the
-central Zipkin Scribe server. So based on Babeltrace\cite{bltrace}, which is a
-CTF converter and trace viewer, we developed a plugin that reads and decodes the
-CTF-formatted information, it creates Thrift\cite{thrift} encoded messages
-recognizable by the Zipkin collector and sends these messages to the Scribe
-server. So we end up with the architecture presented in
-Figure\ref{fig:specific}.
+\subsection{BlkKin architecture}
+So far we mentioned that we need a tracing agent that run on every host and
+captures data produced by the instrumented applications. This agent is LTTng.
+Then, data have to be sent in real time to Zipkin. However, LTTng live tracing
+supports only CTF\footnote{http://www.efficios.com/ctf} to text
+transformations. Consequently, to process and visualize tracing data in real
+time in Zipkin, we implemented a live-tracing plugin that transforms in real
+time CTF data to Scribe messages and sents them to a Scribe server. Our plugin,
+base on Babeltrace\footnote{https://lttng.org/babeltrace}, which is a CTF
+converter and trace viewer, reads and decodes the CTF-encoded information,
+creates Thrift encoded messages recognizable by the Zipkin collector and sends
+these messages to the Scribe server. The plugin is under evaluation for
+contribution to LTTng.
 
-The instrumented application produces tracing information according to the
-Dapper semantics using our custom made tracing library, through instrumentation
-points in its source code. This information is aggregated by \emph{LTTng} and
-sent to the \emph{relayd} daemon. After that, our Babeltrace plugin gets the
-tracing data from the relayd, processes them as mentioned and finally sends them
-to the Scribe server. 
+So we BlkKin's architecture is presented in Figure\ref{fig:blkin}. The
+instrumented application produces tracing information according to the Dapper
+semantics using our BlkKin library, through instrumentation points in its source
+code. This information is aggregated by LTTng and sent to the relayd. After
+that, our Babeltrace plugin gets the tracing data from the relayd, processes
+them as mentioned and finally sends them to the Scribe server.
 
-\subsubsection{Deployment} In Figure~\ref{fig:specific} each arrow represents a
-TCP communication. This offers us a lot of versatility concerning deployment.
-Based on specific needs and cluster architecture each service can run on a
-different node. Also, the Scriber server, that the Babeltrace plugin finally
-sends the tracing information to, can be either the central Zipkin collector or
-a local Scribe daemon that will eventually send the data to the central
-collector, thus exploiting the asynchronous, buffered communication provided by
-Scribe.
+\subsubsection{BlKin Deployment} Each arrow show in Figure ~\ref{fig:blkin}, in
+BlkKin's internal architecture represents a TCP communication. Also, the
+Scriber server, which the Babeltrace plugin finally sends the tracing
+information to, can be either the central Zipkin collector or a local Scribe
+daemon that will eventually send the data to the central collector, thus
+exploiting the asynchronous, buffered communication provided by Scribe. So we
+can have a lot of versatility concerning deployment.
 
-So in a cluster deployment with many nodes, we end up having the architecture
-presented in Figure~\ref{fig:generic}. In this deployment, there is a whole
-\emph{BlkKin} stack running on every node of the cluster. The communication
-described in Figure\ref{fig:specific} takes place over localhost and the tracing
-data will end up being handled by a local Scribe daemon. This daemon will
-normally send the data to the cental Zipkin collector, but also store them
-locally in case of a connection loss or if the central Zipkin collector is busy
-and try to send them later.  So we can make sure that no data will be lost,
-because any data loss would mess up the tracing semantics and end up with an
-inconsistent UI and database state.
-
-\begin{figure}[h!]
-  \centering
-  \includegraphics[scale=0.75]{images/specific.png}
-  \caption{\emph{BlkKin} architecture}
-  \label{fig:specific}
-\end{figure}
+In a cluster deployment with many nodes, we end up having the architecture
+presented in Figure~\ref{fig:blkin}. In this deployment, there is a whole
+BlkKin stack running on every cluster node. All the communication takes place
+over localhost and the tracing data will end up being handled by a local Scribe
+daemon. This daemon will normally send the data to the cental Zipkin collector
+in batch messages, but also store them locally in case of a connection loss or
+if the central Zipkin collector is busy and try to send them later. So through
+batch messaging we reduce the Zipkin collector congestion and we can make sure
+that no data will be lost, because any data loss would mess up the tracing
+semantics and end up with an inconsistent UI and database state.
 
 \begin{figure}[h!]
   \centering
-  \includegraphics[scale=0.75]{images/generic.png}
-  \caption{\emph{BlkKin} deployment}
-  \label{fig:generic}
+  \includegraphics[scale=0.5]{images/blkin2.png}
+  \caption{BlkKin deployment and communication}
+  \label{fig:blkin}
 \end{figure}
 
-\section{Clock Synchronization}
+\subsection{Clock Synchronization}
 
-A crucial matter that needs special treatment when it comes to distributed
-tracing is clock synchronization. In a \emph{BlkKin} cluster deployment, ideally
-we would like to have no time difference between the cluster nodes' clocks,
-since we are interested in measuring latencies and processing durations in the
-scale of microseconds. So, a possible time skew in the scale of milliseconds
-could result in having a response virtually happening before its triggering
-request.
+A matter that needs special treatment when it comes to distributed
+tracing, is clock synchronization. In a BlkKin cluster deployment, ideally we
+would like to have no time difference between the clocks of individual cluster
+nodes, since we are interested in measuring latencies between nodes and
+processing durations in the scale of microseconds. So, a possible time skew in
+the scale of milliseconds could result in having a response virtually happening
+before its triggering request. The most common solution for clock
+synchronization is NTP. Although according to \cite{hp} NTP's accuracy was not
+acceptable for tracing, so arithmetic methods had to be deployed to solve the
+time skew problem, the NTP v4 published in 2010, improved NTP's potential
+accuracy to the tens of microseconds with modern workstations and fast LANs,
+through fundamental improvements in the mitigation and discipline algorithms.
+So NTP's accuracy fit our needs for clock synchronization.
 
-In order to solve this problem various solutions have been proposed. Before
-2010, NTP's precision was within the interval from 100 $\mu$s to 2 ms. Such
-precision was unacceptable for tracing storage systems. So NTP was abandoned as
-a clock synchronization mechanism and instead post-tracing, statistical methods
-were developed in order to adjust time differences. Time skews were approximated
-using arithmetic analysis methods like linear regression. In these methods, each
-node collected traces using its own clock. Afterwards, considering a specific
-node as anchor, time differences from the anchor were calculated for the whole
-tracing duration for all cluster nodes. For each node, these deltas where
-interpolated in order to find the best approximation for the time skew
-throughout the tracing session. The new approximated deltas were applied to the
-collected timestamps in a separate layer, before the tracing information were
-finally stored. According to \cite{hp} these methods performed well. However,
-their disadvantage was the post processing overhead which could be significant
-for long tracing sessions and the fact that live tracing was not possible.
+\section{Implementation} 
 
-However, the new version of NTP (version 4), published in June 2010, improved
-NTP's synchronizing potential accuracy to the tens of microseconds with modern
-workstations and fast LANs. According to our measures, with a LAN communication
-time at about <?>, after <?> NTP's precision reached <?>.  So, instead of just
-using the same global NTP server for all the cluster nodes, we used one single
-cluster node serving as NTP server for the rest. Thus exploiting the fast LAN
-interconnecting the cluster nodes, we achieved the needed accuracy.
- 
-\section{Evaluation - Usecase} In order to evaluate BlkKin's performance and
-expressiveness we used it in Archipelago and RADOS. So, we added instrumentation
-points within the Archipelago and RADOS code that noted the seperate phases that
-the IO request passed through as well as all the needed information concerning
-the specific request, like the object name, the request type (read,write) and
-its size. There is also a QEMU driver for Archipelago that exports an Archipelgo
-volume in the virtual machine. We added instrumentation points in this driver as
-well. So the first phase of the IO request processing was the QEMU layer, then
-we had the Archipelago layers (vlmc, mapper, rados blocker) and finally the
-RADOS part where we separated the operation handling per OSD, the journal
-access, the filestore access, the replication etc.
+Archipelago is a software-defined storage ststem, used in Synnefo\cite{synnefo}
+and uses RADOS as a storage backend. Archipelago is structured in a layered
+architecture. It offers a QEMU driver for provisioning virtual volumes in
+virtual machines. So using our BlkKin library we instrumented the QEMU driver,
+Archipelago and RADOS source code. 
 
-We ran benchmarks to evaluate the added overead that BlkKin imposes on
+\begin{figure}[h!]
+  \centering
+  \includegraphics[scale=0.3]{images/archipelago-overview.png}
+  \caption{Archipelago overview}
+  \label{fig:archipelago}
+\end{figure}
+
+Imitating other Zipkin libraries that used HTTP headers to transfer the trace,
+span and parent span ids, our library used a struct containing this
+information.  This struct is initiated in QEMU and propagated through the
+Archipelago layers ,as a separate field in Archipelago requests, and finally
+through librados to RADOS. By extending the RADOS internal classes, we managed
+to reach this information until the request is served by the filestore.
+Overall, we added 113 instrumentation points, that log the separate phases the
+IO request passes through and all the needed information concerning the
+specific request, like the object name, the request type (read,write) and its
+size.
+
+\section{Evaluation - Conclusion} 
+
+We ran benchmarks to evaluate the added overhead that BlkKin imposes on
 Archipelago and RADOS. For example imitating an IOZone workload we measured the
-throughput of 1GB of 64KB sequential writes without intrumentation points and
+throughput of 1GB of 64KB sequential writes without instrumentation points and
 with instrumentation points with enabled and disabled tracing, since LTTng can
 stop the tracing session without affecting the application and start it again if
-needed. The results can be seen in the table. To justify the extra overhead, every IO requests triggered 113 different
-tracepoints
+needed. The results can be seen in the table.
 
 \begin{center}
 \begin{tabular}{| l | p{3cm} | p{2cm} |}
@@ -339,44 +330,111 @@ tracepoints
     \hline
     \end{tabular}
 \end{center}
-Apart from the Zipkin UI that gave as an overall impression about the systems'
+
+So, the layered multi-node architecture shown in Figure \ref{fig:archipelago},
+after being traced with BlkKin, ends up as shown in Figure \ref{fig:zipkin} in
+the Zipkin UI. Each bar represents a distinct processing phase.
+
+\begin{figure}[h!]
+  \centering
+  \includegraphics[scale=0.15]{images/zipkin.png}
+  \caption{Archipelago overview}
+  \label{fig:zipkin}
+\end{figure}
+
+Apart from the UI that gave as an overall impression about the systems'
 performance and bottlenecks, using simple SQL-queries we were able to calculate
 average metrics like each layer's duration, the communication latency between
 Archipelago and RADOS or the time that a request stayed in RADOS's dispatch
 queue before being served.   
 
+To sum up, we created a working prototype for a low-overhead, live-tracing
+infrastructure based on open-source technologies. Using BlkKin we can extract
+information not only per system's component but also, per request. Exposing the
+system's internals under any possible workload can lead to more reliable
+distributed systems.
+
 \begin{thebibliography}{9}
-\bibitem{rados}
-    RADOS: A Scalable, Reliable Storage Service for Petabyte-scale
-    Storage Clusters
 \bibitem{archip}
-    Archipelago,
-    info about
-\bibitem{lttng}
-    LTTng,
-    info about
-\bibitem{systemtap}
-    SystemTap,
-    info about
-\bibitem{bltrace}
-    Babeltracep,
-    info about
+ \textbf{~okeanos: Large-Scale Cloud Service Using Ceph},
+ Giannakos, Filippos and  Koukis, Vangelis and Venetsanopoulos, Constantinos and Koziris, Nectarios,
+ ;login,
+ June 2014,
+ Vol 39,
+ pages 6-9,
+ USENIX Association
 \bibitem{dapper}
-    Dapper,
-    info about
-\bibitem{zipkin}
-    Zipkin,
-   info about
-\bibitem{scribe}
-    scribe,
-   info about
-\bibitem{thrift}
-    scribe,
-   info about
-\bibitem{synnefo}
-    scribe,
-   info about
+    \textbf{Dapper, a Large-Scale Distributed Systems Tracing Infrastructure},
+    Benjamin H.
+    Sigelman and Luiz André Barroso and Mike Burrows and Pat Stephenson and Manoj
+    Plakal and Donald Beaver and Saul Jaspan and Chandan Shanbhag, 2010, Google,
+    Inc.
+\bibitem{rados}
+ \textbf{RADOS: A Scalable, Reliable Storage Service for Petabyte-scale Storage Clusters},
+ Weil, Sage A. and Leung, Andrew W. and Brandt, Scott A. and Maltzahn, Carlos,
+ Proceedings of the 2Nd International Workshop on Petascale Data Storage: Held in Conjunction with Supercomputing '07,
+ isbn 978-1-59593-899-2,
+ pages 35--44,
+ ACM
+\bibitem{ganglia}
+ \textbf{The Ganglia Distributed Monitoring System: Design, Implementation And Experience},
+ Matthew L. Massie and Brent N. Chun and David E. Culler,
+ Parallel Computing Vol 30
+\bibitem{stardust}
+    \textbf{Stardust: A flexible architecture for passive localization in wireless sensor networks},
+    Radu Stoleru and Pascal Vicaire and Tian He and John A. Stankovic,
+    ACM Conference on Embedded Networked Sensor Systems (SenSys),
+    2006,
+    pages 57-70,
+    ACM Press
 \bibitem{hp}
-    hp paper
+    \textbf{Efficient tracing and performance analysis for large distributed systems},
+    Eric Anderson, Christopher Hoover, Xiaozhou Li, and Joseph Tucek. 
+    MASCOTS, 
+    pages 1-10,
+    2009,
+    IEEE
+\bibitem{scribe}
+  \textbf{Data warehousing and analytics infrastructure at Facebook}
+  Jain, Namit and
+    Borthakur, Dhruba and
+    Murthy, Raghotham and
+    Shao, Zheng and
+    Antony, Suresh and
+    Thusoo, Ashish and
+    Sarma, Joydeep and
+    Liu, Hao,
+  Special Interest Group on Management of Data (SIGMOD)
+\bibitem{thrift}
+    \textbf{Thrift: Scalable Cross-Language Services Implementation},
+    Aditya Agarwal, Mark Slee, and Marc Kwiatkowski,
+    Facebook, 
+    April 2007
+\bibitem{desnoyer}
+    \textbf{Low-Impact Operating System Tracing},
+    Desnoyers M.,
+    PhD dissertation
+    2009,
+    Ecole Polytechnique de Montreal
+\bibitem{kprobes}
+    \textbf{Probing the guts of kprobes},
+    Ananth Mavinakayanahalli, Prasanna
+    Panchamukhi, Jim Keniston, Anil
+    Keshavamurthy, and Masami Hiramatsu,
+    Proceedings of the Ottawa Linux
+    Symposium 2006, 2006
+\bibitem{kmarkers}
+    \textbf{Kernel markers},
+    Jonathan Corbet,
+     Linux Weekly News, 
+    http://lwn.net/Articles/245671/,
+    August 2007
+\bibitem{synnefo}
+    \textbf{Synnefo: A Complete Cloud Stack over Ganeti},
+    Koukis, Vangelis and Venetsanopoulos, Constantinos and Koziris, Nectarios,
+    ;login Vol 38,
+    October 2013,
+    pages 6-10,
+    USENIX Association
 \end{thebibliography}
 \end{document}
