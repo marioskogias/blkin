@@ -166,15 +166,15 @@ the aggregated information. To build BlkKin we combine various open-source
 technologies. We use LTTng (Linux Trace Toolkit - next
 generation)\footnote{http://lttng.org/} as tracing backend per host and we
 extend it to communicate in real time with
-Zipkin\footnote{http://twitter.github.io/zipkin/}, a Twitter's, open-source
-implementation of Google's Dapper\cite{dapper}. We created a C/C++ library to
-instrument applications according to the semantics described in \cite{dapper}.
-Using this library we extended Archipelago\cite{archip} and RADOS\cite{rados} to
-support cross-layer tracing, achieving to track any IO request, with an id which
-is propagated within the infrastructure, from its creation
-till its completion. Apart from the visualization part, this enables us to
-extract aggregate time information either per systems' module or per specific
-workload.
+Zipkin\footnote{http://twitter.github.io/zipkin/}, an open-source
+implementation of Google's Dapper\cite{dapper} by Twitter. We created a C/C++
+library to instrument applications according to the semantics described in
+\cite{dapper}. Using this library we extended Archipelago\cite{archip} and
+RADOS\cite{rados} to support cross-layer tracing, achieving to track any IO
+request, with an id which is propagated within the infrastructure, from its
+creation till its completion. Apart from the visualization part, this enables
+us to extract aggregate time information either per systems' module or per
+specific workload.
 
 Related work on the aforementioned problem can be divided into two categories.
 There are tools like Ganglia\cite{ganglia} or
@@ -240,7 +240,7 @@ databases, and a Web interface to visualize the aggregated data.
 
 Zipkin uses Scribe\cite{scribe} to transport traces from the different services
 to the central collector. Scribe is a logging server created by Facebook,
-aiming to be scalable and reliable.  Scribe servers are arranged in a directed
+aiming to be scalable and reliable. Scribe servers are arranged in a directed
 graph, with each server knowing only about the next server in the graph. This
 network topology allows for adding extra layers of fan-in, as a system grows
 and batching messages before sending them between datacenters as well as
@@ -254,16 +254,16 @@ batch processing Map-Reduce jobs. However, Zipkin did not provide any C/C++
 library to instrument low-overhead applications. The offered libraries were in
 scripting languages like Ruby, or in Java and Scala. We created a C/C++ library
 that encapsulates the Dapper semantics and can be used within C/C++ projects to
-create trace information in accordance with the Dapper logic.  This library is
+create trace information in accordance with the Dapper logic. This library is
 designed to be backend-independent, which means that one can implement his own
-log aggregation backend.  However, we offered a specific backend implementation
+log aggregation backend. However, we offered a specific backend implementation
 according to our initial prerequisites concerning overhead, based on LTTng that
 is being thoroughly examined in the next chapter.
 
 \subsection{Tracing Backend}
 
 BlkKin's design was driven by a strict low-overhead and production-wise
-operation prerequisite. So the first important decision to make concerned the
+operation requirement. So the first important decision to make concerned the
 system that would implement the system's backend, namely the system that would
 run on every cluster node and be responsible for aggregating tracing data from
 the instrumented applications. We chose to use LTTng in our system's backend.
@@ -282,7 +282,7 @@ generic toolkit for both user and kernel tracing, which can be easily
 installed on almost every system needed to instrument.
 
 Concerning user-space tracing, LTTng supports static tracepoint
-instrumentation.  This means to manually insert tracepoints in the application
+instrumentation. This means to manually insert tracepoints in the application
 source code and rebuild the application. After rebuilt, these tracepoints will
 get triggered during execution and produce the described traces, without
 breakpoints or system-calls. As far a kernel-space is concerned, LTTng is
@@ -304,7 +304,7 @@ added a lot of extra overhead to the instrumented system so it could not
 continue working production-wise, or because tracing information was not in a
 state that could be processed before the end of the tracing session. For LTTng
 especially, tracing data were in a binary form that could be decoded only after
-the end of the tracing session.  However, since version 2.4 of LTTng there is
+the end of the tracing session. However, since version 2.4 of LTTng there is
 also live tracing support. Using a daemon called \emph{relayd}, tracing data can
 be streamed over TCP forming batch TCP packets and processed while the tracing
 session is still in progress.
@@ -394,7 +394,7 @@ Archipelago and RADOS source code.
 
 Imitating other Zipkin libraries that used HTTP headers to transfer the trace,
 span and parent span ids, our library used a struct containing this
-information.  This struct is initiated in QEMU and propagated through the
+information. This struct is initiated in QEMU and propagated through the
 Archipelago layers ,as a separate field in Archipelago requests, and finally
 through librados to RADOS. By extending the RADOS internal classes, we managed
 to reach this information until the request is served by the filestore.
@@ -403,7 +403,7 @@ IO request passes through and all the needed information concerning the
 specific request, like the object name, the request type (read,write) and its
 size.
 
-\section{Evaluation - Conclusion}
+\section{Evaluation}
 
 We ran benchmarks to evaluate the added overhead that BlkKin poses on
 Archipelago and RADOS. For example imitating an IOZone workload we measured the
@@ -435,17 +435,19 @@ the Zipkin UI. Each bar represents a distinct processing phase.
   \label{fig:zipkin}
 \end{figure}
 \end{center}
-Apart from the UI that gave as an overall impression about the systems'
-performance and bottlenecks, using simple SQL-queries we were able to calculate
-average metrics like each layer's duration, the communication latency between
-Archipelago and RADOS or the time that a request stayed in RADOS's dispatch
-queue before being served.
+Apart from the UI that gave as an overall impression about system
+performance and bottlenecks, we were able to use simple SQL-queries to
+calculate average metrics like the processing duration for every layer, the
+communication latency between Archipelago and RADOS, and the amount of time
+spent by every request RADOS's dispatch queue, before being served.
 
-To sum up, we created a working prototype for a low-overhead, live-tracing
+\section{Conclusion}
+
+We have presented BlkKin, a working prototype for a low-overhead, live-tracing
 infrastructure based on open-source technologies. Using BlkKin we can extract
 information not only per system's component but also, per request. Exposing the
-system's internals under any possible workload can lead to more reliable
-distributed systems.
+system's internals under any possible workload simplifies debugging and
+finetuning, and can eventually lead to more reliable distributed systems.
 
 \bibliography{references}
 \bibliographystyle{plain}
