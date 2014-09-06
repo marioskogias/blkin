@@ -1,23 +1,113 @@
-\documentclass[a4paper,10pt,twocolumn]{article}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% BlkKin: An End-to-end Tracing Tool for Software Defined Storage
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\documentclass[11pt,journal,compsoc]{IEEEtran}
+%\documentclass[11pt]{article}
+%\documentclass[doublespacing]{elsart}
+
+%\documentclass[journal,9.5pt,twocolumn]{IEEEtran}
+%\documentclass[journal,12pt,draftclsnofoot,onecolumn]{IEEEtran}
+
+
+\usepackage{array}
+\usepackage{verbatim}
+\usepackage{amsmath}
 \usepackage{graphicx}
-\usepackage{authblk}
+\usepackage{subfig}
+\usepackage{alltt}
+%\usepackage{caption2}
+%\usepackage{scalefnt}
+%\usepackage{floatflt}
+%\usepackage{relsize}
+\usepackage{paralist}
+\usepackage[cm-default]{fontspec}
+\usepackage{xunicode} % provides unicode character macros
+\usepackage{xltxtra}
+\usepackage{setspace}
+\usepackage{path}
+\usepackage{cite}
+% Algorithm package options
+%\usepackage[longend, linesnumbered]{algorithm2e}
+
+% Uncomment if using Elsevier's format:
+%\makeatletter
+%\newif\if@restonecol
+%\makeatother
+%\let\algorithm\relax
+%\let\endalgorithm\relax
+% End Elsevier-specific hack
+
+\usepackage[algoruled, longend, linesnumbered]{algorithm2e}
+\SetKwFor{ForEach}{foreach}{do}{end foreach}
+\SetKwFor{While}{while}{do}{end while}
+\SetKwFor{If}{if}{do}{end if}
+
+\usepackage{xcolor}
+\usepackage[pdfborderstyle={/S/U/W 1}]{hyperref}
+\hypersetup{%
+        citebordercolor=gray,
+        filebordercolor=gray,
+        linkbordercolor=gray,
+        menubordercolor=gray,
+        runbordercolor=gray,
+        urlbordercolor=gray,
+	pdftitle={BlkKin: An End-to-end Tracing Tool for Software Defined Storage},
+	pdfsubject={9th Parallel Data Storage Workshop, held in conjunction with SC14},
+        pdfauthor={Marios-Evangelos Kogias, Filippos Giannakos, Vangelis Koukis, Constantinos Venetsanopoulos, Nectarios Koziris},
+        pdfkeywords={distributed storage, tracing, low-latency, LTTng, Zipkin, Dapper, metrics, RADOS, Archipelago},
+}
+
+%% Font selection
+\defaultfontfeatures{Scale=MatchLowercase,Mapping=tex-text}
+\setmainfont{Minion Pro}
+%\setmainfont{Palatino Linotype}
+%\setmainfont[Numbers=Lowercase]{Gentium}
+\setsansfont{Myriad Pro}
+%\setsansfont{Lucida Handwriting}
+%\setmonofont{Monaco}
+\setmonofont{Consolas}
+
+% Abbreviations
+\newcommand{\okeanos}{$\sim$okeanos{}}
+%
+% Paragraph indentation
+%
+\setlength{\parskip}{2ex}
+\setlength{\parindent}{0em}
+
+\makeatletter
+\long\def\unmarkedfootnote#1{{\long\def\@makefntext##1{##1}
+\footnotetext{#1}}}
+\makeatother
+
+%
+% Make sure that no weird hyphenation occurs
+%
+\lefthyphenmin=2
+\righthyphenmin=2
+
+%\include{vkoukis-common}
+
 \begin{document}
-\title{\emph{BlkKin}: An End-to-end Tracing Tool for Software Defined Storage 
-Systems}
-\author[1]{Marios-Evangelos Kogias}
-\author[1]{Filippos Giannakos}
-\author[1]{Vangelis Koukis}
-\author[2]{Constantinos Venetsanopoulos}
-\author[1]{Nectarios Koziris}
-\affil[1]{National Technical University of Athens
-Dept. of Electrical and Computer Engineering
-Computing Systems Laboratory}
-\affil[2]{Greek Research and Technology Network}
-\date{}
+\title{BlkKin: An End-to-end Tracing Tool for Software Defined Storage Systems}
+\author{
+\IEEEauthorblockN{Marios-Evangelos Kogias,~CSLab,~NTUA}\\
+\and
+\IEEEauthorblockN{Filippos Giannakos,~CSLab,~NTUA}\\
+\and
+\IEEEauthorblockN{Vangelis Koukis,~CSLab,~NTUA}\\
+\and
+\IEEEauthorblockN{Constantinos Venetsanopoulos,~GRNET}\\
+\and
+\IEEEauthorblockN{Nectarios Koziris,~CSLab,~NTUA}
+}
+
 \maketitle
 
-\section*{Abstract}
+\begin{abstract}
 Distributed storage systems require special treatment concerning their
 monitoring and tracing. BlkKin provides the necessary infrastructure for tracing
 software-defined storage systems. It enables live tracing and inserts minimal
@@ -26,12 +116,13 @@ in production scale. Its tracing semantics lead to a cross-layered, end-to-end
 representation of the system and how the IO requests interact with it.
 End-to-end request tracing enables elaborate information extraction concerning
 specific system parts, specific workloads or specific system resources, allowing
-the, otherwise impossible, location of latencies and bottlenecks. 
+the, otherwise impossible, location of latencies and bottlenecks.
 %BlkKin provides a full stack implementation with a data collector, data
 %aggregator and a Web UI for visualizing the tracing information can be easily
 %incorporated by any system in need of such a tracing framework.
+\end{abstract}
 
-\textbf{Keywords: } tracing, monitoring, low-latency, LTTng, RADOS
+\textbf{Keywords: } distributed storage, tracing, low-latency, LTTng, Zipkin, Dapper, metrics, RADOS, Archipelago
 
 \section{Introduction}
 
@@ -91,7 +182,7 @@ ELK\footnote{http://www.elasticsearch.org/overview/} that are more monitoring
 oriented. On the other hand, tools like Stardust\cite{stardust} or \cite{hp}
 concentrated mostly on tracing and track capturing and did not provide live
 tracing.
- 
+
 \section{Background}
 In this section we describe why we used Zipkin and LTTng as BlkKin's building
 blocks.
@@ -103,7 +194,7 @@ assumes there is no additional information other than the message record. So
 statistical regression techniques should be used to infer any existing
 association. \emph{Annotation-based} schemes, though, rely on applications or
 middleware to explicitly tag every record with a global identifier that links
-these message records back to the originating request. 
+these message records back to the originating request.
 
 For our needed, overall review of the system per specific request, we had to
 implement an annotation-based monitoring scheme. In addition, this scheme needs
@@ -130,9 +221,9 @@ Every span is associated with a specific trace. A different trace id is used to
 group data so that all spans associated with the same initial request share the
 common trace id. For our case, information concerning a specific IO request
 share the same trace id and each distinct IO request initiates a new trace id.
-\item[parent span] 
+\item[parent span]
 In order to depict the causal relationships between different spans in a single
-trace, parent span id is used. Spans without a parent span ids are  known as 
+trace, parent span id is used. Spans without a parent span ids are  known as
 \emph{root spans}.
 \end{description}
 
@@ -186,9 +277,9 @@ implemented in kernel and then ported to user-space as well. In addition, LTTng
 supports a variety of Linux distributions and since version 2.x kernel tracer
 modules are built against a vanilla or distribution kernel, without need for
 additional patches. The nanosecond-scale added overhead per event traced
-mentioned in \cite{desnoyer}, convienced us to use LTTng and have the same
-generic toolkit for both user and kernel tracing, wchich can be easily
-installed on almost every system needed to instrument. 
+mentioned in \cite{desnoyer}, convinced us to use LTTng and have the same
+generic toolkit for both user and kernel tracing, which can be easily
+installed on almost every system needed to instrument.
 
 Concerning user-space tracing, LTTng supports static tracepoint
 instrumentation.  This means to manually insert tracepoints in the application
@@ -214,9 +305,9 @@ continue working production-wise, or because tracing information was not in a
 state that could be processed before the end of the tracing session. For LTTng
 especially, tracing data were in a binary form that could be decoded only after
 the end of the tracing session.  However, since version 2.4 of LTTng there is
-also live tracing support. Using a daemon called \emph{realyd}, tracing data can
+also live tracing support. Using a daemon called \emph{relayd}, tracing data can
 be streamed over TCP forming batch TCP packets and processed while the tracing
-session is still in progress. 
+session is still in progress.
 
 \section{Design}
 As mentioned, BlkKin was designed respecting four prerequisites:
@@ -230,7 +321,7 @@ Then, data have to be sent in real time to Zipkin. However, LTTng live tracing
 supports only CTF\footnote{http://www.efficios.com/ctf} to text
 transformations. Consequently, to process and visualize tracing data in real
 time in Zipkin, we implemented a live-tracing plugin that transforms in real
-time CTF data to Scribe messages and sents them to a Scribe server. Our plugin,
+time CTF data to Scribe messages and sends them to a Scribe server. Our plugin,
 base on Babeltrace\footnote{https://lttng.org/babeltrace}, which is a CTF
 converter and trace viewer, reads and decodes the CTF-encoded information,
 creates Thrift encoded messages recognizable by the Zipkin collector and sends
@@ -244,9 +335,9 @@ code. This information is aggregated by LTTng and sent to the relayd. After
 that, our Babeltrace plugin gets the tracing data from the relayd, processes
 them as mentioned and finally sends them to the Scribe server.
 
-\subsubsection{BlKin Deployment} Each arrow show in Figure ~\ref{fig:blkin}, in
+\subsubsection{BlkKin Deployment} Each arrow show in Figure ~\ref{fig:blkin}, in
 BlkKin's internal architecture represents a TCP communication. Also, the
-Scriber server, which the Babeltrace plugin finally sends the tracing
+Scribe server, which the Babeltrace plugin finally sends the tracing
 information to, can be either the central Zipkin collector or a local Scribe
 daemon that will eventually send the data to the central collector, thus
 exploiting the asynchronous, buffered communication provided by Scribe. So we
@@ -256,7 +347,7 @@ In a cluster deployment with many nodes, we end up having the architecture
 presented in Figure~\ref{fig:blkin}. In this deployment, there is a whole
 BlkKin stack running on every cluster node. All the communication takes place
 over localhost and the tracing data will end up being handled by a local Scribe
-daemon. This daemon will normally send the data to the cental Zipkin collector
+daemon. This daemon will normally send the data to the central Zipkin collector
 in batch messages, but also store them locally in case of a connection loss or
 if the central Zipkin collector is busy and try to send them later. So through
 batch messaging we reduce the Zipkin collector congestion and we can make sure
@@ -265,7 +356,7 @@ semantics and end up with an inconsistent UI and database state.
 
 \begin{figure}[h!]
   \centering
-  \includegraphics[scale=0.5]{images/blkin2.png}
+  \includegraphics[scale=0.5]{figs/blkin2.png}
   \caption{BlkKin deployment and communication}
   \label{fig:blkin}
 \end{figure}
@@ -286,17 +377,17 @@ accuracy to the tens of microseconds with modern workstations and fast LANs,
 through fundamental improvements in the mitigation and discipline algorithms.
 So NTP's accuracy fit our needs for clock synchronization.
 
-\section{Implementation} 
+\section{Implementation}
 
-Archipelago is a software-defined storage ststem, used in Synnefo\cite{synnefo}
+Archipelago is a software-defined storage system, used in Synnefo\cite{synnefo}
 and uses RADOS as a storage backend. Archipelago is structured in a layered
 architecture. It offers a QEMU driver for provisioning virtual volumes in
 virtual machines. So using our BlkKin library we instrumented the QEMU driver,
-Archipelago and RADOS source code. 
+Archipelago and RADOS source code.
 
 \begin{figure}[h!]
   \centering
-  \includegraphics[scale=0.3]{images/archipelago-overview.png}
+  \includegraphics[scale=0.3]{figs/archipelago-overview.png}
   \caption{Archipelago overview}
   \label{fig:archipelago}
 \end{figure}
@@ -312,7 +403,7 @@ IO request passes through and all the needed information concerning the
 specific request, like the object name, the request type (read,write) and its
 size.
 
-\section{Evaluation - Conclusion} 
+\section{Evaluation - Conclusion}
 
 We ran benchmarks to evaluate the added overhead that BlkKin poses on
 Archipelago and RADOS. For example imitating an IOZone workload we measured the
@@ -327,7 +418,7 @@ needed. The results can be seen in the table.
     Mode & Throughput(MB/s) & Latency/Op (ms)  \\ \hline
     not instrumented & 12.7 & 5.16  \\ \hline
     instrumented stopped & 11.8 &  5.56  \\ \hline
-    instrumented & 11 & 5.94  \\ 
+    instrumented & 11 & 5.94  \\
     \hline
     \end{tabular}
 \end{center}
@@ -339,7 +430,7 @@ the Zipkin UI. Each bar represents a distinct processing phase.
 \begin{center}
 \begin{figure}[h!]
   \centering
-  \includegraphics[scale=0.15]{images/zipkin.png}
+  \includegraphics[scale=0.15]{figs/zipkin.png}
   \caption{Zipkin UI}
   \label{fig:zipkin}
 \end{figure}
@@ -348,7 +439,7 @@ Apart from the UI that gave as an overall impression about the systems'
 performance and bottlenecks, using simple SQL-queries we were able to calculate
 average metrics like each layer's duration, the communication latency between
 Archipelago and RADOS or the time that a request stayed in RADOS's dispatch
-queue before being served.   
+queue before being served.
 
 To sum up, we created a working prototype for a low-overhead, live-tracing
 infrastructure based on open-source technologies. Using BlkKin we can extract
