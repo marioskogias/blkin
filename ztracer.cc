@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Marios Kogias <marioskogias@gmail.com>
+ * Copyright 2014 Marios Kogias <marioskogias@gmail.com>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or
