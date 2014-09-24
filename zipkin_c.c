@@ -35,8 +35,7 @@
 
 const char *default_ip = "NaN";
 const char *default_name = "NoName";
-int count;
-int rate;
+int count = 0;
 
 /* Change this function based on sampling logic
  * return 1 for tracing and 0 for no tracing
@@ -69,7 +68,7 @@ int _blkin_init_new_trace(struct blkin_trace *new_trace, char *service,
         struct blkin_endpoint *endpoint)
 {
     int res;
-    if (!shoud_trace()) {
+    if (!should_trace()) {
         new_trace->info.trace_id = 0;
         res = 0;
         goto OUT;

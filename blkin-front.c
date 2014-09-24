@@ -36,7 +36,8 @@
 #include <time.h>       /* time */
 #include <unistd.h>
 #include <fcntl.h>                                                              
-                            
+#include <stdlib.h>
+
 /* Function pointers to be resolved during initialization */
 int (*blkin_init_new_trace)(struct blkin_trace *new_trace, char *name,
         struct blkin_endpoint *endpoint);
@@ -161,7 +162,12 @@ int blkin_init(void)
 	 * Initialize srand with sth appropriete
 	 * time is not good for archipelago: several deamons -> same timstamp
 	 */
-	int inf, seed;                                                              
+	int inf, seed;
+        extern int rate;
+	char * rate_env = getenv("RATE");
+	if (!rate_env)
+		rate_env = "1";
+	rate = atoi(rate_env);	
 	inf = open("/dev/urandom", O_RDONLY); //file descriptor 1                   
 	read(inf, &seed, sizeof(int));    
 	srand(seed);
