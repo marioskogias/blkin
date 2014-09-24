@@ -35,7 +35,24 @@
 
 const char *default_ip = "NaN";
 const char *default_name = "NoName";
+int count;
+int rate;
 
+/* Change this function based on sampling logic
+ * return 1 for tracing and 0 for no tracing
+ * */
+int should_trace() {
+    int res;
+    if (count==rate) {
+        count = 0;
+        res = 1;
+    } else {
+        count++;
+        res = 0;
+    }
+    return res;
+} 
+        
 int64_t random_big()
 {
     int64_t a;
@@ -52,6 +69,11 @@ int _blkin_init_new_trace(struct blkin_trace *new_trace, char *service,
         struct blkin_endpoint *endpoint)
 {
     int res;
+    if (!shoud_trace()) {
+        new_trace->info.trace_id = 0;
+        res = 0;
+        goto OUT;
+    }
     if (!new_trace) {
         res = -EINVAL;
         goto OUT;
@@ -69,18 +91,21 @@ OUT:
 
 int _blkin_init_child_info(struct blkin_trace *child,
         struct blkin_trace_info *parent_info, struct blkin_endpoint *endpoint,
-	char *child_name)
+        char *child_name)
 {
     int res;
     if ((!child) || (!parent_info) || (!endpoint)){
         res = -EINVAL;
         goto OUT;
     }
-    child->info.trace_id = parent_info->trace_id;
-    child->info.span_id = random_big();
-    child->info.parent_span_id = parent_info->span_id;
-    child->name = child_name;
-    child->trace_endpoint = endpoint;
+    if (parent_info->trace_id)  {
+        child->info.trace_id = parent_info->trace_id;
+        child->info.span_id = random_big();
+        child->info.parent_span_id = parent_info->span_id;
+        child->name = child_name;
+        child->trace_endpoint = endpoint;
+    } else 
+        child->info.trace_id = 0;
     res = 0;
 
 OUT:
@@ -88,7 +113,7 @@ OUT:
 }
 
 int _blkin_init_child(struct blkin_trace *child, struct blkin_trace *parent,
-		struct blkin_endpoint *endpoint, char *child_name)
+        struct blkin_endpoint *endpoint, char *child_name)
 {
     int res;
     if (!parent) {
@@ -169,40 +194,42 @@ int _blkin_record(struct blkin_trace *trace, struct blkin_annotation *annotation
         res = -EINVAL;
         goto OUT;
     }
-    if (!annotation->annotation_endpoint && trace->trace_endpoint)
-        annotation->annotation_endpoint = trace->trace_endpoint;
-    if (!trace->name) 
-        trace->name = default_name;
-    if (!annotation->annotation_endpoint->ip)
-        annotation->annotation_endpoint->ip = default_ip;
-    if (!annotation->annotation_endpoint->name)
-        annotation->annotation_endpoint->name = default_name;
+    if (trace->info.trace_id) {
+        if (!annotation->annotation_endpoint && trace->trace_endpoint)
+            annotation->annotation_endpoint = trace->trace_endpoint;
+        if (!trace->name) 
+            trace->name = default_name;
+        if (!annotation->annotation_endpoint->ip)
+            annotation->annotation_endpoint->ip = default_ip;
+        if (!annotation->annotation_endpoint->name)
+            annotation->annotation_endpoint->name = default_name;
 
-    if (annotation->type == ANNOT_STRING) {
-        if ((!annotation->key) || (!annotation->val)) {
-            res = -EINVAL;
-            goto OUT;
+        if (annotation->type == ANNOT_STRING) {
+            if ((!annotation->key) || (!annotation->val)) {
+                res = -EINVAL;
+                goto OUT;
+            }
+            tracepoint(zipkin, keyval, trace->name,
+                    annotation->annotation_endpoint->name,
+                    annotation->annotation_endpoint->port,
+                    annotation->annotation_endpoint->ip,
+                    trace->info.trace_id, trace->info.span_id,
+                    trace->info.parent_span_id,
+                    annotation->key, annotation->val);
         }
-        tracepoint(zipkin, keyval, trace->name,
-                annotation->annotation_endpoint->name,
-                annotation->annotation_endpoint->port,
-                annotation->annotation_endpoint->ip,
-                trace->info.trace_id, trace->info.span_id,
-                trace->info.parent_span_id,
-                annotation->key, annotation->val);
-    }
-    else {
-        if (!annotation->val) {
-            res = -EINVAL;
-            goto OUT;
+        else {
+            if (!annotation->val) {
+                res = -EINVAL;
+                goto OUT;
+            }
+            tracepoint(zipkin, timestamp , trace->name,
+                    annotation->annotation_endpoint->name,
+                    annotation->annotation_endpoint->port,
+                    annotation->annotation_endpoint->ip,
+                    trace->info.trace_id, trace->info.span_id,
+                    trace->info.parent_span_id,
+                    annotation->val);
         }
-        tracepoint(zipkin, timestamp , trace->name,
-                annotation->annotation_endpoint->name,
-                annotation->annotation_endpoint->port,
-                annotation->annotation_endpoint->ip,
-                trace->info.trace_id, trace->info.span_id,
-                trace->info.parent_span_id,
-                annotation->val);
     }
     res = 0;
 OUT:
