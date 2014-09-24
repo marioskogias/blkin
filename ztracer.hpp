@@ -130,6 +130,10 @@ namespace ZTracer {
 					delete [] c_name;
 				}
 			}
+            ZTraceEndpointRef get_endpoint()
+            {
+                return this->ep;
+            }
 
 			int get_trace_info(struct blkin_trace_info *info);
 			int set_trace_info(struct blkin_trace_info *info);
