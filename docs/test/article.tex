@@ -208,20 +208,20 @@ This scheme meets the aforementioned demands and is used in
 BlkKin. \cite{dapper} describes the following concepts for tracing:
 
 \begin{description}
-\item[annotation]
+\item[annotation] \hfill \\
 The actual information being logged. There are two kinds of annotations. Either
 \emph{timestamp}, where the specific timestamp of an event is being logged or
 \emph{key-value}, where a specific key-value pair is being logged.
-\item[span]
+\item[span] \hfill \\
 The basic unit of the process tree. Each specific processing phase can be
 depicted as a different span. Each span should have a specific name and a
 distinct span id.
-\item[trace]
+\item[trace] \hfill \\
 Every span is associated with a specific trace. A different trace id is used to
 group data so that all spans associated with the same initial request share the
 common trace id. For our case, information concerning a specific IO request
 share the same trace id and each distinct IO request initiates a new trace id.
-\item[parent span]
+\item[parent span] \hfill \\
 In order to depict the causal relationships between different spans in a single
 trace, parent span id is used. Spans without a parent span ids are  known as
 \emph{root spans}.
@@ -297,17 +297,17 @@ each request was served. Consequently, since since we chose to implement the
 Dapper tracing semantics, static tracing was the only way to do that.
 
 Finally, live tracing is a prerequisite. Although live monitoring may seem
-natural for systems like ELK\footnote, live tracing in combination with
-low-overhead was not possible. Older tracing approaches required separation
-between the tracing and operation phases. This happened either because tracing
-added a lot of extra overhead to the instrumented system so it could not
-continue working production-wise, or because tracing information was not in a
-state that could be processed before the end of the tracing session. For LTTng
-especially, tracing data were in a binary form that could be decoded only after
-the end of the tracing session. However, since version 2.4 of LTTng there is
-also live tracing support. Using a daemon called \emph{relayd}, tracing data can
-be streamed over TCP forming batch TCP packets and processed while the tracing
-session is still in progress.
+natural for systems like ELK\footnote{http://www.elasticsearch.org/overview/},
+live tracing in combination with low-overhead was not possible. Older tracing
+approaches required separation between the tracing and operation phases. This
+happened either because tracing added a lot of extra overhead to the
+instrumented system so it could not continue working production-wise, or
+because tracing information was not in a state that could be processed before
+the end of the tracing session. For LTTng especially, tracing data were in a
+binary form that could be decoded only after the end of the tracing session.
+However, since version 2.4 of LTTng there is also live tracing support. Using a
+daemon called \emph{relayd}, tracing data can be streamed over TCP forming
+batch TCP packets and processed while the tracing session is still in progress.
 
 \section{Design}
 As mentioned, BlkKin was designed respecting four prerequisites:
@@ -413,6 +413,7 @@ stop the tracing session without affecting the application and start it again if
 needed. The results can be seen in the table.
 
 \begin{center}
+\scalebox{0.8}{
 \begin{tabular}{| l | p{3cm} | p{2cm} |}
     \hline
     Mode & Throughput(MB/s) & Latency/Op (ms)  \\ \hline
@@ -421,6 +422,7 @@ needed. The results can be seen in the table.
     instrumented & 11 & 5.94  \\
     \hline
     \end{tabular}
+}
 \end{center}
 
 So, the layered multi-node architecture shown in Figure \ref{fig:archipelago},
@@ -430,7 +432,7 @@ the Zipkin UI. Each bar represents a distinct processing phase.
 \begin{center}
 \begin{figure}[h!]
   \centering
-  \includegraphics[scale=0.15]{figs/zipkin.png}
+  \includegraphics[scale=0.13]{figs/zipkin.png}
   \caption{Zipkin UI}
   \label{fig:zipkin}
 \end{figure}
