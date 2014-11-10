@@ -121,10 +121,10 @@ namespace ZTracer {
 
 			int get_trace_info(struct blkin_trace_info *info);
 			int set_trace_info(struct blkin_trace_info *info);
-			int keyval(const string &key, const string &val);
-			int keyval(const string &key, const string &val, ZTraceEndpointRef ep);
-			int event(const string &event);
-			int event(const string &event, ZTraceEndpointRef ep);
+			int keyval(const char *key, const char *val);
+			int keyval(const char *key, const char *val, ZTraceEndpointRef ep);
+			int event(const char *event);
+			int event(const char *event, ZTraceEndpointRef ep);
 	};
 
 	ZTraceEndpointRef create_ZTraceEndpoint(const string &ip, int port, const string &name);

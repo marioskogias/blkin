@@ -36,29 +36,27 @@ namespace ZTracer {
 		return blkin_init();
 	}
 
-	int ZTrace::keyval(const string &key, const string &val)
+	int ZTrace::keyval(const char *key, const char *val)
 	{
-		BLKIN_KEYVAL(&trace, ep->get_blkin_ep(), (char *)key.c_str(),
-				(char *)val.c_str());
+		BLKIN_KEYVAL(&trace, ep->get_blkin_ep(), key, val);
 		return 0;
 	}
 
-	int ZTrace::event(const string &event)
+	int ZTrace::event(const char *event)
 	{
-		BLKIN_TIMESTAMP(&trace, ep->get_blkin_ep(), (char *)event.c_str());
+		BLKIN_TIMESTAMP(&trace, ep->get_blkin_ep(), event);
 		return 0;
 	}
 
-	int ZTrace::keyval(const string &key, const string &val, ZTraceEndpointRef ep)
+	int ZTrace::keyval(const char *key, const char *val, ZTraceEndpointRef ep)
 	{
-		BLKIN_KEYVAL(&trace, ep->get_blkin_ep(), (char *)key.c_str(),
-				(char *)val.c_str());
+		BLKIN_KEYVAL(&trace, ep->get_blkin_ep(), key, val);
 		return 0;
 	}
 
-	int ZTrace::event(const string &event, ZTraceEndpointRef ep)
+	int ZTrace::event(const char *event, ZTraceEndpointRef ep)
 	{
-		BLKIN_TIMESTAMP(&trace, ep->get_blkin_ep(), (char *)event.c_str());
+		BLKIN_TIMESTAMP(&trace, ep->get_blkin_ep(), event);
 		return 0;
 	}
 
