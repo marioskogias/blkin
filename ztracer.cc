@@ -36,21 +36,6 @@ namespace ZTracer {
 		return blkin_init();
 	}
 
-	char * to_cstr(const string &s)
-	{
-		char *cstr = new char [s.length()+1];
-		strcpy(cstr, s.c_str());
-
-		return cstr;
-	}
-
-	char * ostr_to_cstr(ostringstream &stream)
-	{
-		string s;
-		s = stream.str();
-
-		return to_cstr(s);
-	}
 	int ZTrace::keyval(const string &key, const string &val)
 	{
 		BLKIN_KEYVAL(&trace, ep->get_blkin_ep(), (char *)key.c_str(),
