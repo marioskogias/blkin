@@ -50,9 +50,9 @@
  * annotations take place
  */ 
 struct blkin_endpoint {
-    char *ip;
+    const char *ip;
     int port;
-    char *name;
+    const char *name;
 };
 
 /**
@@ -85,7 +85,7 @@ struct blkin_trace_info_packed {
  * Struct used to define the context in which an annotation happens
  */
 struct blkin_trace {
-    char *name;
+    const char *name;
     struct blkin_trace_info info;
     struct blkin_endpoint *trace_endpoint;
 };
@@ -106,8 +106,8 @@ typedef enum {
  */
 struct blkin_annotation {
     blkin_annotation_type type;
-    char *key;
-    char *val;
+    const char *key;
+    const char *val;
     struct blkin_endpoint *annotation_endpoint;
 };
 

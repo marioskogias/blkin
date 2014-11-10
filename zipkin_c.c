@@ -48,7 +48,7 @@ int64_t random_big()
     return a;
 };
 
-int _blkin_init_new_trace(struct blkin_trace *new_trace, char *service,
+int _blkin_init_new_trace(struct blkin_trace *new_trace, const char *service,
         struct blkin_endpoint *endpoint)
 {
     int res;
@@ -69,7 +69,7 @@ OUT:
 
 int _blkin_init_child_info(struct blkin_trace *child,
         struct blkin_trace_info *parent_info, struct blkin_endpoint *endpoint,
-	char *child_name)
+	const char *child_name)
 {
     int res;
     if ((!child) || (!parent_info) || (!endpoint)){
@@ -88,7 +88,7 @@ OUT:
 }
 
 int _blkin_init_child(struct blkin_trace *child, struct blkin_trace *parent,
-		struct blkin_endpoint *endpoint, char *child_name)
+		struct blkin_endpoint *endpoint, const char *child_name)
 {
     int res;
     if (!parent) {
@@ -107,8 +107,8 @@ OUT:
     return res;
 }
 
-int _blkin_init_endpoint(struct blkin_endpoint *endp, char *ip, int port,
-        char *name)
+int _blkin_init_endpoint(struct blkin_endpoint *endp, const char *ip, int port,
+        const char *name)
 {
     int res;
     if (!endp){
@@ -127,8 +127,8 @@ OUT:
     return res;
 }
 
-int _blkin_init_string_annotation(struct blkin_annotation *annotation, char *key,
-        char *val, struct blkin_endpoint *endpoint)
+int _blkin_init_string_annotation(struct blkin_annotation *annotation, const char *key,
+        const char *val, struct blkin_endpoint *endpoint)
 {
     int res;
     if ((!annotation) || (!key) || (!val)){
@@ -146,7 +146,7 @@ OUT:
 }
 
 int _blkin_init_timestamp_annotation(struct blkin_annotation *annotation,
-        char *event, struct blkin_endpoint *endpoint)
+        const char *event, struct blkin_endpoint *endpoint)
 {
     int res;
     if ((!annotation) || (!event)){

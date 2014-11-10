@@ -16,10 +16,10 @@
 TRACEPOINT_EVENT(
         zipkin,
         keyval,
-        TP_ARGS(char *, trace_name, char *, service, 
-            int, port, char *, ip, long, trace, 
+        TP_ARGS(const char *, trace_name, const char *, service, 
+            int, port, const char *, ip, long, trace, 
             long, span, long, parent_span, 
-            char *, key, char *, val ),
+            const char *, key, const char *, val ),
         
         TP_FIELDS(
                 /*
@@ -60,10 +60,10 @@ TRACEPOINT_LOGLEVEL(
 TRACEPOINT_EVENT(
         zipkin,
         timestamp,
-        TP_ARGS(char *, trace_name, char *, service, 
-            int, port, char *, ip, long, trace, 
+        TP_ARGS(const char *, trace_name, const char *, service, 
+            int, port, const char *, ip, long, trace, 
             long, span, long, parent_span, 
-            char *, event),
+            const char *, event),
         
         TP_FIELDS(
                 ctf_string(trace_name, trace_name)
