@@ -2,7 +2,7 @@
 # babeltrace_zipkin.py
 
 import sys
-sys.path.append("/root/babeltrace-plugins")
+sys.path.append("../../babeltrace-plugins")
 import json
 import getopt
 from babeltrace import *
