@@ -36,73 +36,56 @@ namespace ZTracer {
 		return blkin_init();
 	}
 
-	char * to_cstr(string &s)
+	int ZTrace::keyval(const char *key, const char *val)
 	{
-		char *cstr = new char [s.length()+1];
-		strcpy(cstr, s.c_str());
-
-		return cstr;
-	}
-
-	char * ostr_to_cstr(ostringstream &stream)
-	{
-		string s;
-		s = stream.str();
-
-		return to_cstr(s);
-	}
-	int ZTrace::keyval(string key, string val)
-	{
-		BLKIN_KEYVAL(&trace, ep->get_blkin_ep(), (char *)key.c_str(),
-				(char *)val.c_str());
+		BLKIN_KEYVAL(&trace, ep->get_blkin_ep(), key, val);
 		return 0;
 	}
 
-	int ZTrace::event(string event)
+	int ZTrace::event(const char *event)
 	{
-		BLKIN_TIMESTAMP(&trace, ep->get_blkin_ep(), (char *)event.c_str());
+		BLKIN_TIMESTAMP(&trace, ep->get_blkin_ep(), event);
 		return 0;
 	}
 
-	int ZTrace::keyval(string key, string val, ZTraceEndpointRef ep)
+	int ZTrace::keyval(const char *key, const char *val, ZTraceEndpointRef ep)
 	{
-		BLKIN_KEYVAL(&trace, ep->get_blkin_ep(), (char *)key.c_str(),
-				(char *)val.c_str());
+		BLKIN_KEYVAL(&trace, ep->get_blkin_ep(), key, val);
 		return 0;
 	}
 
-	int ZTrace::event(string event, ZTraceEndpointRef ep)
+	int ZTrace::event(const char *event, ZTraceEndpointRef ep)
 	{
-		BLKIN_TIMESTAMP(&trace, ep->get_blkin_ep(), (char *)event.c_str());
+		BLKIN_TIMESTAMP(&trace, ep->get_blkin_ep(), event);
 		return 0;
 	}
 
 
-	ZTraceEndpointRef create_ZTraceEndpoint(string ip, int port, string name)
+	ZTraceEndpointRef create_ZTraceEndpoint(const string &ip, int port, const string &name)
 	{
 		boost::shared_ptr<ZTraceEndpoint> ret(new ZTraceEndpoint(ip, port, name));
 		return ret;
 	}
 
-	ZTraceRef create_ZTrace(string name, ZTraceEndpointRef ep)
+	ZTraceRef create_ZTrace(const string &name, ZTraceEndpointRef ep)
 	{
 		boost::shared_ptr<ZTrace> ret(new ZTrace(name, ep));
 		return ret;
 	}
 
-	ZTraceRef create_ZTrace(string name, ZTraceRef t)
+	ZTraceRef create_ZTrace(const string &name, ZTraceRef t)
 	{
 		boost::shared_ptr<ZTrace> ret(new ZTrace(name, t));
 		return ret;
 	}
 
-	ZTraceRef create_ZTrace(string name, ZTraceRef t, ZTraceEndpointRef ep)
+	ZTraceRef create_ZTrace(const string &name, ZTraceRef t, ZTraceEndpointRef ep)
 	{
 		boost::shared_ptr<ZTrace> ret(new ZTrace(name, t, ep));
 		return ret;
 	}
 
-	ZTraceRef create_ZTrace(string name, ZTraceEndpointRef ep, struct blkin_trace_info *info, bool child)
+	ZTraceRef create_ZTrace(const string &name, ZTraceEndpointRef ep, struct blkin_trace_info *info, bool child)
 	{
 		boost::shared_ptr<ZTrace> ret(new ZTrace(name, ep, info, child));
 		return ret;

@@ -38,13 +38,10 @@ extern "C" {
 #include <blkin-front.h>
 }
 
-using std::string;
-using std::ostringstream;
-
 namespace ZTracer {
+	using std::string;
+
 	int ztrace_init(void);
-	char * to_cstr(string &s);
-	char * ostr_to_cstr(ostringstream &stream);
 
 	class ZTraceEndpoint;
 	class ZTrace;
@@ -55,28 +52,23 @@ namespace ZTracer {
 	class ZTraceEndpoint {
 		private:
 			struct blkin_endpoint ep;
-			char *c_ip;
-			char *c_name;
-		protected:
+			string ip;
+			string name;
+
 			struct blkin_endpoint * get_blkin_ep()
 			{
 				return &ep;
 			}
 			friend ZTrace;
 		public:
-			ZTraceEndpoint(string ip, int port, string endpoint_name)
+			ZTraceEndpoint(const string &ip, int port, const string &endpoint_name)
+				: ip(ip), name(endpoint_name)
 			{
-				c_ip = to_cstr(ip);
-				c_name = to_cstr(endpoint_name);
-				blkin_init_endpoint(&ep, c_ip, port, c_name);
+				blkin_init_endpoint(&ep, ip.c_str(), port, name.c_str());
 			}
 			~ZTraceEndpoint()
 			{
 				//cout << "Endpoint destroyed" << std::endl;
-				if (c_ip)
-					delete [] c_ip;
-				if (c_name)
-					delete [] c_name;
 			}
 	};
 
@@ -84,52 +76,44 @@ namespace ZTracer {
 		private:
 			struct blkin_trace trace;
 			ZTraceEndpointRef ep;
-			char *c_name = NULL;
-		protected:
+			string name;
+
 			struct blkin_trace *get_blkin_trace()
 			{
 				return &trace;
 			}
 		public:
-			ZTrace(string name, ZTraceEndpointRef ep)
-				:ep(ep)
+			ZTrace(const string &name, ZTraceEndpointRef ep)
+				: ep(ep), name(name)
 			{
-				c_name = to_cstr(name);
-				blkin_init_new_trace(&trace, c_name, ep->get_blkin_ep());
+				blkin_init_new_trace(&trace, name.c_str(), ep->get_blkin_ep());
 			}
 
-			ZTrace(string name, ZTraceRef t)
+			ZTrace(const string &name, ZTraceRef t)
+				: ep(t->ep), name(name)
 			{
-				this->ep = t->ep;
-				c_name = to_cstr(name);
-				blkin_init_child(&trace, t->get_blkin_trace(), ep->get_blkin_ep(), c_name);
+				blkin_init_child(&trace, t->get_blkin_trace(),
+						ep->get_blkin_ep(), name.c_str());
 			}
 
-			ZTrace(string name, ZTraceRef t, ZTraceEndpointRef ep)
+			ZTrace(const string &name, ZTraceRef t, ZTraceEndpointRef ep)
+				: ep(ep), name(name)
 			{
-				this->ep = ep;
-				c_name = to_cstr(name);
 				blkin_init_child(&trace, t->get_blkin_trace(), ep->get_blkin_ep(),
-						c_name);
+						name.c_str());
 			}
 
-			ZTrace(string name, ZTraceEndpointRef ep, struct blkin_trace_info *info, bool child=false)
+			ZTrace(const string &name, ZTraceEndpointRef ep, struct blkin_trace_info *info, bool child=false)
+				: ep(ep), name(name)
 			{
-				c_name = to_cstr(name);
-				this->ep = ep;
 				if (child)
-					blkin_init_child_info(&trace, info, ep->get_blkin_ep(), c_name);
+					blkin_init_child_info(&trace, info, ep->get_blkin_ep(), name.c_str());
 				else {
-					blkin_init_new_trace(&trace, c_name, ep->get_blkin_ep());
+					blkin_init_new_trace(&trace, name.c_str(), ep->get_blkin_ep());
 					blkin_set_trace_info(&trace, info);
 				}
 			}
-			~ZTrace()
-			{
-				if (c_name) {
-					delete [] c_name;
-				}
-			}
+
             ZTraceEndpointRef get_endpoint()
             {
                 return this->ep;
@@ -137,17 +121,17 @@ namespace ZTracer {
 
 			int get_trace_info(struct blkin_trace_info *info);
 			int set_trace_info(struct blkin_trace_info *info);
-			int keyval(string key, string val);
-			int keyval(string key, string val, ZTraceEndpointRef ep);
-			int event(string event);
-			int event(string event, ZTraceEndpointRef ep);
+			int keyval(const char *key, const char *val);
+			int keyval(const char *key, const char *val, ZTraceEndpointRef ep);
+			int event(const char *event);
+			int event(const char *event, ZTraceEndpointRef ep);
 	};
 
-	ZTraceEndpointRef create_ZTraceEndpoint(string ip, int port, string name);
-	ZTraceRef create_ZTrace(string name, ZTraceEndpointRef ep);
-	ZTraceRef create_ZTrace(string name, ZTraceRef t);
-	ZTraceRef create_ZTrace(string name, ZTraceRef t, ZTraceEndpointRef ep);
-	ZTraceRef create_ZTrace(string name, ZTraceEndpointRef ep, struct blkin_trace_info *info, bool child=false);
+	ZTraceEndpointRef create_ZTraceEndpoint(const string &ip, int port, const string &name);
+	ZTraceRef create_ZTrace(const string &name, ZTraceEndpointRef ep);
+	ZTraceRef create_ZTrace(const string &name, ZTraceRef t);
+	ZTraceRef create_ZTrace(const string &name, ZTraceRef t, ZTraceEndpointRef ep);
+	ZTraceRef create_ZTrace(const string &name, ZTraceEndpointRef ep, struct blkin_trace_info *info, bool child=false);
 
 }
 #endif /* end of include guard: ZTRACER_H */
