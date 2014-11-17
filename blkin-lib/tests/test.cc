@@ -88,7 +88,7 @@ class Parent {
 			/*Annotate*/
 			tr->event("parent start");
 			/*Set trace info to the message*/
-			tr->set_trace_info(&msg.trace_info);	
+			tr->get_trace_info(&msg.trace_info);	
 			
 			/*send*/
 			send(s2, &msg, sizeof(struct message), 0);
@@ -154,7 +154,7 @@ class Child {
 			struct message msg;
 			recv(s, &msg, sizeof(struct message), 0);
 			
-			tr = ZTracer::create_ZTrace("parent process", e, &msg.trace_info);
+			tr = ZTracer::create_ZTrace("Child process", e, &msg.trace_info, true);
 			tr->event("child start");
 			
 			usleep(10);
