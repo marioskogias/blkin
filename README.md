@@ -53,5 +53,7 @@ where the channel directories are included.
 
 ## Dependencies
 
-* libboost-all-dev
+* libboost-all-dev 
 * lttng-tools
+
+Note that BlkKin is tested only with LTTng2.4
