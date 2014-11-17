@@ -34,13 +34,13 @@ DLIBPP=$(LIB_DIR)/libzipkin-cpp
 DLIBFRONT=$(LIB_DIR)/libblkin-front
 
 test: test.c $(DLIBFRONT).so
-	gcc test.c -o test -g -I. -L$(LIB_DIR) -lblkin-front
+	gcc test.c -o test -g -I$(LIB_DIR) -L$(LIB_DIR) -lblkin-front
 
 testpp: test.cc $(DLIBPP).so
-	LD_LIBRARY_PATH=$(LIB_DIR) g++ $< -o testpp -g -I. -L. -lboost_thread -lboost_system -lzipkin-cpp
+	LD_LIBRARY_PATH=$(LIB_DIR) g++ $< -o testpp -g -I$(LIB_DIR) -L$(LIB_DIR) -lboost_thread -lboost_system -lzipkin-cpp
 
 testppp: test_p.cc $(DLIBPP).so
-	LD_LIBRARY_PATH=$(LIB_DIR) g++ $< -o testppp -g -I. -L. -lboost_thread -lboost_system -lzipkin-cpp
+	LD_LIBRARY_PATH=$(LIB_DIR) g++ $< -o testppp -g -I$(LIB_DIR) -L$(LIB_DIR) -lboost_thread -lboost_system -lzipkin-cpp
 
 run_c:
 	LD_LIBRARY_PATH=$(LIB_DIR) ./test
