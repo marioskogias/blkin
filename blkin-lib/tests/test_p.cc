@@ -88,7 +88,7 @@ class Parent {
 			/*Annotate*/
 			tr->event("parent start");
 			/*Set trace info to the message*/
-			tr->set_trace_info(&msg.trace_info);	
+			tr->get_trace_info(&msg.trace_info);	
 			
 			/*send*/
 			send(s2, &msg, sizeof(struct message), 0);
@@ -154,7 +154,7 @@ class Child {
 			struct message msg;
 			recv(s, &msg, sizeof(struct message), 0);
 			
-			tr = ZTracer::create_ZTrace("parent process", e, &msg.trace_info);
+			tr = ZTracer::create_ZTrace("Child process", e, &msg.trace_info, true);
 			tr->event("child start");
 			
 			usleep(10);
@@ -191,17 +191,24 @@ class Child {
 };
 int main(int argc, const char *argv[])
 {
-	int r = ZTracer::ztrace_init();
-	if (r < 0) {
-		std::cout << "Error initializing blkin" << std::endl;
-		return -1;
+	if (fork()) {
+		int r = ZTracer::ztrace_init();
+		if (r < 0) {
+			std::cout << "Error initializing blkin" << std::endl;
+			exit(1);
+		}
+	    Parent p;
+		p();
+		exit(0);
+	} else {
+		int r = ZTracer::ztrace_init();
+		if (r < 0) {
+			std::cout << "Error initializing blkin" << std::endl;
+			exit(1);
+		}
+	    Child c;
+		c();
+		exit(0);
 	}
-	Parent p;
-	Child c;
-	boost::thread workerThread1(p);
-	boost::thread workerThread2(c);
-	workerThread1.join();
-	workerThread2.join();
-
 	return 0;
 }

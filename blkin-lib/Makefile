@@ -36,6 +36,7 @@ DLIBPP=libzipkin-cpp
 DLIBFRONT=libblkin-front
 
 LIB_DIR=$(shell pwd)
+TEST_DIR=$(shell pwd)/tests
 prefix= /usr/local
 libdir= $(prefix)/lib
 incdir= $(prefix)/include
@@ -83,23 +84,23 @@ zipkin_c.o: zipkin_c.c zipkin_c.h zipkin_trace.h
 tp.o: tp.c zipkin_trace.h
 	gcc -I. -fpic -g -c -o $@ $<
 
-test: test.c $(DLIBFRONT).so
-	gcc test.c -o test -g -I. -L. -lblkin-front
+test: $(TEST_DIR)/test.c $(DLIBFRONT).so
+	make -C tests test
 
-testpp: test.cc $(DLIBPP).so
-	LD_LIBRARY_PATH=$(LIB_DIR) g++ $< -o testpp -g -I. -L. -lboost_thread -lboost_system -lzipkin-cpp
+testpp: $(TEST_DIR)/test.cc $(DLIBPP).so
+	make -C tests testpp
 
-testppp: test_p.cc $(DLIBPP).so
-	LD_LIBRARY_PATH=$(LIB_DIR) g++ $< -o testppp -g -I. -L. -lboost_thread -lboost_system -lzipkin-cpp
+testppp: $(TEST_DIR)/test_p.cc $(DLIBPP).so
+	make -C tests testppp
 
 run_c:
-	LD_LIBRARY_PATH=$(LIB_DIR) ./test
+	make -C tests run_c
 
 run_pp:
-	LD_LIBRARY_PATH=$(LIB_DIR) ./testpp
+	make -C tests run_pp
 
 run_ppp:
-	LD_LIBRARY_PATH=$(LIB_DIR) ./testppp
+	make -C tests run_ppp
 
 run: run_c run_pp
 
@@ -116,7 +117,8 @@ install:
 	install -m 644 $(H_FILES) $(DESTDIR)/$(incdir)
 
 clean:
-	rm -f *.o *.so test testpp testppp
+	rm -f *.o *.so
+	make -C tests clean
 
 distclean: clean
 	rm -f socket
