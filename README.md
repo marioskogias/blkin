@@ -41,7 +41,7 @@ Babeltrace plugin. This plugin tranforms LTTng trace data to a JSON format and
 sends them to a Scribe sever.To do so we can equivalently run
 
 ```
-./json/src/babeltrace_zipkin.py </path/to/lttng/traces> -s <server_ip>
+./json/src/babeltrace_json.py </path/to/lttng/traces> -s <server_ip>
 -p <port_number>
 ```
 within the babeltrace-plugins directory 
