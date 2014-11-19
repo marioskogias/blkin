@@ -1,0 +1,9 @@
+#!/bin/bash
+set -e
+
+echo "postinst $@"
+
+(python -m compileall -q -f "@PYTHONDIR@/zipkin_logic/" || /bin/true)
+(python -m compileall -q -f "@PYTHONDIR@/scribe_client/" || /bin/true)
+
+exit 0

@@ -1,0 +1,13 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: BlkKin Dapper-style Tracer
+Description: BlkKin is a library that enables Dapper-style traces with Zipkin + LTTng
+Version: @VERSION@
+Requires:
+Requires.private: liblttng-ust libdl
+Libs: -L${libdir} -lzipkin-cpp
+Cflags: -I${includedir} 
+

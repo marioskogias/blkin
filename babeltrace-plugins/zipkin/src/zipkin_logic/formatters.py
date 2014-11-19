@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from __future__ import print_function
+
 import json
 import struct
 import socket
@@ -72,8 +74,8 @@ def base64_thrift(thrift_obj):
     thrift_obj.write(tbp)
     res = trans.getvalue().encode('base64').strip()
     res = res.replace("\n","")
-    #print res
-    #print len(res)
+    #print(res)
+    #print(len(res))
     return res
     #return trans.getvalue().encode('base64').strip()
 

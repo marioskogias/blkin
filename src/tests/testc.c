@@ -151,6 +151,7 @@ void process_b()
     }
 
     printf("Trying to connect...\n");
+    usleep(1000);
 
     remote.sun_family = AF_UNIX;
     strcpy(remote.sun_path, SOCK_PATH);

@@ -1,0 +1,38 @@
+Source: blkin
+Priority: optional
+Maintainer: Andrew Shewmaker <agshew@gmail.com>
+Build-Depends: debhelper (>= 9), libboost-all-dev, lttng-tools, liblttng-ust-dev
+Standards-Version: 3.9.5
+Section: libs
+Homepage: https://github.com/marioskogias/blkin
+Vcs-Git: https://github.com/agshew/blkin.git
+Vcs-Browser: https://github.com/agshew/blkin
+
+Package: blkin-dev
+Section: libdevel
+Architecture: any
+Depends: blkin (= ${binary:Version}), ${misc:Depends}
+Description: Support for developing programs using the blkin tracing library
+ blkin is a C/C++ library that enables you to get traces from C/C++ applications
+ according to the tracing semantics mentioned in the Dapper paper and
+ implemented in Zipkin
+ .
+ As a tracing backend blkin uses LTTng
+
+Package: blkin
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Dapper-style tracing library to be used with Zipkin
+ blkin is a C/C++ library that enables you to get traces from C/C++ applications
+ according to the tracing semantics mentioned in the Dapper paper and
+ implemented in Zipkin
+ .
+ As a tracing backend blkin uses LTTng
+
+Package: blkin-babeltrace
+Section: utils
+Architecture: any
+Depends: blkin (= ${binary:Version}), ${misc:Depends}, python, python3-babeltrace
+Description: Translate and send traces to Zipkin and Scribe for visualization
+ Use babeltrace_zipkin.py to send blkin traces to Zipkin.
+ Use babeltrace_json.py to send any LTTng traces to a Scribe server.

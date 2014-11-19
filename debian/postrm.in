@@ -1,0 +1,9 @@
+#!/bin/bash
+set -e
+
+echo "postrm $@"
+
+(rm -rf "@PYTHONDIR@/zipkin_logic/" || /bin/true)
+(rm -rf "@PYTHONDIR@/scribe_client/" || /bin/true)
+
+exit 0

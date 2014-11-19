@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # scribe_client.py
 
+from __future__ import print_function
 from scribe import scribe
 from thrift.transport import TTransport, TSocket
 from thrift.protocol import TBinaryProtocol
@@ -8,7 +9,7 @@ from thrift.protocol import TBinaryProtocol
 class ScribeClient(object):
 
     def __init__(self, port, host):
-        print host
+        print(host)
         self.port = port
         self.host = host
         self.openConnection()
