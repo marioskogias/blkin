@@ -7,7 +7,7 @@ Name: BlkKin Dapper-style Tracer
 Description: BlkKin is a library that enables Dapper-style traces with Zipkin + LTTng
 Version: @VERSION@
 Requires:
-Requires.private: liblttng-ust libdl
+Requires.private: lttng-ust
 Libs: -L${libdir} -lzipkin-cpp
 Cflags: -I${includedir} 
 
