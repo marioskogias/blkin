@@ -9,5 +9,5 @@ Version: @VERSION@
 Requires:
 Requires.private: lttng-ust
 Libs: -L${libdir} -lzipkin-cpp
-Cflags: -I${includedir} 
+Cflags: -I${includedir}/blkin
 
