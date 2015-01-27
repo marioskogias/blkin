@@ -284,7 +284,8 @@ class BinaryAnnotation:
       oprot.writeFieldEnd()
     if self.value is not None:
       oprot.writeFieldBegin('value', TType.STRING, 2)
-      oprot.writeString(self.value)
+      #print(str(type(self.value))+":  "+str(self.value))
+      oprot.writeString(self.value.decode())
       oprot.writeFieldEnd()
     if self.annotation_type is not None:
       oprot.writeFieldBegin('annotation_type', TType.I32, 3)
