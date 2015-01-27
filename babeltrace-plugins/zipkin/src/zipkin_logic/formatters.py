@@ -19,7 +19,8 @@ import socket
 from thrift.protocol import TBinaryProtocol
 from thrift.transport import TTransport
 
-import ttypes
+import zipkin_logic.ttypes
+import base64
 
 
 def hex_str(n):
@@ -62,7 +63,10 @@ def json_formatter(traces, *json_args, **json_kwargs):
 
 
 def ipv4_to_int(ipv4):
-    return struct.unpack('!i', socket.inet_aton(ipv4))[0]
+    try:
+        return struct.unpack('!i', socket.inet_aton(ipv4))[0]
+    except:
+        return 0
 
 
 def base64_thrift(thrift_obj):
@@ -70,7 +74,9 @@ def base64_thrift(thrift_obj):
     tbp = TBinaryProtocol.TBinaryProtocol(trans)
 
     thrift_obj.write(tbp)
-    res = trans.getvalue().encode('base64').strip()
+    #res = trans.getvalue().encode('base64').strip()
+    tmp_string = trans.getvalue()
+    res = base64.standard_b64encode(tmp_string).decode()
     res = res.replace("\n","")
     #print res
     #print len(res)
@@ -80,18 +86,18 @@ def base64_thrift(thrift_obj):
 
 def binary_annotation_formatter(annotation, host=None):
     annotation_types = {
-        'string': ttypes.AnnotationType.STRING,
-        'bytes': ttypes.AnnotationType.BYTES,
+        'string': zipkin_logic.ttypes.AnnotationType.STRING,
+        'bytes': zipkin_logic.ttypes.AnnotationType.BYTES,
     }
 
     annotation_type = annotation_types[annotation.annotation_type]
 
     value = annotation.value
 
-    if isinstance(value, unicode):
+    if isinstance(value, str):
         value = value.encode('utf-8')
 
-    return ttypes.BinaryAnnotation(
+    return zipkin_logic.ttypes.BinaryAnnotation(
         annotation.name,
         value,
         annotation_type,
@@ -105,13 +111,13 @@ def base64_thrift_formatter(trace, annotations):
     for annotation in annotations:
         host = None
         if annotation.endpoint:
-            host = ttypes.Endpoint(
+            host = zipkin_logic.ttypes.Endpoint(
                 ipv4=ipv4_to_int(annotation.endpoint.ipv4),
                 port=annotation.endpoint.port,
                 service_name=annotation.endpoint.service_name)
 
         if annotation.annotation_type == 'timestamp':
-            thrift_annotations.append(ttypes.Annotation(
+            thrift_annotations.append(zipkin_logic.ttypes.Annotation(
                 timestamp=annotation.value,
                 value=annotation.name,
                 host=host))
@@ -119,7 +125,7 @@ def base64_thrift_formatter(trace, annotations):
             binary_annotations.append(
                 binary_annotation_formatter(annotation, host))
 
-    thrift_trace = ttypes.Span(
+    thrift_trace = zipkin_logic.ttypes.Span(
         trace_id=trace.trace_id,
         name=trace.name,
         id=trace.span_id,

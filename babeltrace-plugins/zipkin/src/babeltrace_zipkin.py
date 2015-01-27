@@ -2,7 +2,9 @@
 # babeltrace_zipkin.py
 
 import sys
-sys.path.append("../../babeltrace-plugins")
+#sys.path.append("../../babeltrace-plugins")
+sys.path.append("zipkin_logic")
+sys.path.append("zipkin_logic/facebook_scribe_python3")
 import sys
 import getopt
 from babeltrace import *
@@ -32,15 +34,16 @@ def main(argv):
             port = arg
 
     if not server:
-        server = "83.212.113.88"
+        server = "127.0.0.1"
     if not port:
-        port = 1463
+        port = 9410
 
     # Open connection with scribe
     zipkin = ZipkinClient(port,  server)
 
     # Create TraceCollection and add trace:
     traces = TraceCollection()
+    print(path)
     trace_handle = traces.add_trace(path, "ctf")
     if trace_handle is None:
         raise IOError("Error adding trace")
@@ -55,10 +58,16 @@ def main(argv):
             continue
 
         #create a zipkin trace from event info
-        trace = zipkin.create_trace(event)
+        try:
+            trace = zipkin.create_trace(event)
+        except:
+            continue
 
         #create a zipkin annotation from event info
-        annotation = zipkin.create_annotation(event, kind)
+        try:
+            annotation = zipkin.create_annotation(event, kind)
+        except:
+            continue
 
         #record the trace
         zipkin.record(trace, annotation)

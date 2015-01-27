@@ -1,9 +1,9 @@
 #!/usr/bin/python
 
-from scribe_client import ScribeClient
-from trace import Annotation, Trace, Endpoint
+from zipkin_logic.scribe_client import ScribeClient
+from zipkin_logic.trace import Annotation, Trace, Endpoint
 from collections import defaultdict
-from formatters import base64_thrift_formatter
+from zipkin_logic.formatters import base64_thrift_formatter
 
 
 class ZipkinClient(ScribeClient):
@@ -40,24 +40,27 @@ class ZipkinClient(ScribeClient):
         #  create and set endpoint
         port = event["port_no"]
         service = event["service_name"]
-        ip = event["ip"]
+        try:
+            ip = event["ip"]
+        except:
+            ip = "0.0.0.0"
         endpoint = Endpoint(ip, int(port), service)
         annotation.endpoint = endpoint
 
-        print annotation
+        print(annotation)
         return annotation
 
     def record(self, trace, annotation):
         self.scribe_log(trace, [annotation])
-	'''
-	trace_key = (trace.trace_id, trace.span_id)
-        self._annotations_for_trace[trace_key].append(annotation)
-        if (annotation.name in self.DEFAULT_END_ANNOTATIONS):
-            saved_annotations = self._annotations_for_trace[trace_key]
-            del self._annotations_for_trace[trace_key]
-            self.scribe_log(trace, saved_annotations)
-        print "Record event"
-	'''
+#	'''
+#	trace_key = (trace.trace_id, trace.span_id)
+#        self._annotations_for_trace[trace_key].append(annotation)
+#        if (annotation.name in self.DEFAULT_END_ANNOTATIONS):
+#            saved_annotations = self._annotations_for_trace[trace_key]
+#            del self._annotations_for_trace[trace_key]
+#            self.scribe_log(trace, saved_annotations)
+#        print "Record event"
+#	'''
 
     def scribe_log(self, trace, annotations):
         trace._endpoint = None
