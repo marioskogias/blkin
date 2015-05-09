@@ -15,7 +15,7 @@ LT_INIT
 AC_PROG_CC
 AC_PROG_CXX
 
-PKG_CHECK_MODULES([LTTNG_UST], [lttng-ust < 2.5])
+PKG_CHECK_MODULES([LTTNG_UST], [lttng-ust > 2.5])
 
 AC_CHECK_LIB(boost_system, main, [], AC_MSG_NOTICE(["Boost system library not found."]))
 

@@ -13,16 +13,6 @@ for some testcases and at the  ``blkin-lib/zipkin_c.h`` file
 
 As a tracing backend BlkKin uses LTTng. So you must have LTTng installed.
 
-In order to build and install the lib, go to blkin-lib folder and:
-
-```
-make
-make install
-```
-
-You should take a look at the examples to find out how to link the blkin lib
-with your instrumented application.
-
 In order to visualize the aggregated information you can use Twitter's
 [Zipkin](http://twitter.github.io/zipkin/) and send the data that you created,
 by running the equivalent babeltrace plugin. In order to do you can run
@@ -55,5 +45,3 @@ where the channel directories are included.
 
 * libboost-all-dev 
 * lttng-tools
-
-Note that BlkKin is tested only with LTTng2.4
