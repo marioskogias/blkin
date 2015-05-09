@@ -1,0 +1,4 @@
+/usr/bin/babeltrace_json
+/usr/bin/babeltrace_zipkin
+@PYTHONDIR@/zipkin_logic/*.py
+@PYTHONDIR@/scribe_client/*.py

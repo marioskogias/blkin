@@ -1,0 +1,2 @@
+@PYTHONDIR@/zipkin_logic
+@PYTHONDIR@/scribe_client

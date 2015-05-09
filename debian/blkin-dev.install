@@ -1,0 +1,3 @@
+usr/include/blkin/*
+usr/lib/*/pkgconfig/blkin.pc
+usr/lib/*/lib*.a
