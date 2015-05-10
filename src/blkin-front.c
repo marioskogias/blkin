@@ -36,7 +36,9 @@
 #include <time.h>       /* time */
 #include <unistd.h>
 #include <fcntl.h>                                                              
-                            
+
+#include <blkin-sampling.h>
+
 /* Function pointers to be resolved during initialization */
 int (*blkin_init_new_trace)(struct blkin_trace *new_trace, char *name,
         struct blkin_endpoint *endpoint);
@@ -174,6 +176,10 @@ int blkin_init(void)
 		}
 	}
 	pthread_mutex_unlock(&blkin_init_mutex);
-	return ret;
+	
+    /*Initialize sampling*/
+    p_sinfo = sampling_init();
+
+    return ret;
 
 }

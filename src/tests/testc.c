@@ -40,7 +40,6 @@
 #include <sys/un.h>
 
 #include <blkin-front.h>
-
 #define SOCK_PATH "/tmp/socket"
 
 struct message {
@@ -100,7 +99,7 @@ void process_a()
 
     printf("Connected.\n");
     
-    for (i=0;i<10;i++) {
+    for (i=0;;i++) {
 
         /*create trace*/
         blkin_init_new_trace(&trace, "process a", &endp);
@@ -163,7 +162,7 @@ void process_b()
 
     printf("Connected.\n");
 
-    for (i=0;i<10;i++) {
+    for (i=0;;i++) {
         recv(s, &msg, sizeof(struct message), 0);
 
         /*create child trace*/

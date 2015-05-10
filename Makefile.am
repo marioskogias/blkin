@@ -30,7 +30,7 @@ ACLOCAL_AMFLAGS = -I m4
 EXTRA_DIST = README.md INSTALL.md blkin.spec blkin.pc
 
 noinst_PROGRAMS = src/tests/testc src/tests/testpp src/tests/testppp
-lib_LTLIBRARIES = src/libblkin-front.la src/libzipkin-c.la src/libzipkin-cpp.la
+lib_LTLIBRARIES = src/libblkin-sampling.la src/libblkin-front.la src/libzipkin-c.la src/libzipkin-cpp.la 
 pkginclude_HEADERS = src/zipkin_c.h src/zipkin_trace.h src/ztracer.hpp src/blkin-front.h
 
 pkgconfigdir = $(libdir)/pkgconfig
@@ -47,8 +47,10 @@ src_tests_testpp_LDADD = src/libzipkin-cpp.la -lboost_thread -lboost_system
 src_tests_testppp_SOURCES = src/tests/test_p.cc
 src_tests_testppp_LDADD = src/libzipkin-cpp.la -lboost_thread -lboost_system
 
+src_libblkin_sampling_la_SOURCES = src/blkin-sampling.c src/blkin-sampling.h
+
 src_libblkin_front_la_SOURCES = src/blkin-front.c
-src_libblkin_front_la_LIBADD = -ldl -llttng-ust
+src_libblkin_front_la_LIBADD = src/libblkin-sampling.la -ldl -llttng-ust
 
 src_libzipkin_cpp_la_SOURCES = src/ztracer.cc src/ztracer.hpp
 src_libzipkin_cpp_la_LIBADD = src/libblkin-front.la
