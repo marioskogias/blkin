@@ -29,7 +29,7 @@
 ACLOCAL_AMFLAGS = -I m4
 EXTRA_DIST = README.md INSTALL.md blkin.spec blkin.pc
 
-noinst_PROGRAMS = src/tests/testc src/tests/testpp src/tests/testppp
+noinst_PROGRAMS = src/tests/testc src/tests/testpp src/tests/testppp src/blkin-janitor
 lib_LTLIBRARIES = src/libblkin-sampling.la src/libblkin-front.la src/libzipkin-c.la src/libzipkin-cpp.la 
 pkginclude_HEADERS = src/zipkin_c.h src/zipkin_trace.h src/ztracer.hpp src/blkin-front.h
 
@@ -37,6 +37,9 @@ pkgconfigdir = $(libdir)/pkgconfig
 dist_pkgconfig_DATA = blkin.pc
 
 AM_CPPFLAGS = -Isrc -I$(srcdir)/src
+
+src_blkin_janitor_SOURCES = src/blkin-janitor.c
+src_blkin_janitor_LDADD = -lpthread
 
 src_tests_testc_SOURCES = src/tests/testc.c
 src_tests_testc_LDADD = src/libblkin-front.la
