@@ -10,11 +10,62 @@
 
 #include <blkin-sampling.h>
 
+int shmid;
+struct sampling_info *data;
+
+void send_message(int message_type)
+{
+    int s, t, len;
+    struct sockaddr_un remote;
+    
+    /*Connect*/
+    if ((s = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
+        perror("socket");
+        exit(1);
+    }
+
+    printf("Trying to connect...\n");
+
+    remote.sun_family = AF_UNIX;
+    strcpy(remote.sun_path, SOCK_PATH);
+    len = strlen(remote.sun_path) + sizeof(remote.sun_family);
+    if (connect(s, (struct sockaddr *)&remote, len) == -1) {
+        perror("connect");
+        exit(1);
+    }
+
+    printf("Connected.\n");
+    pid_t pid;
+    struct connection_info cinfo;
+
+    /*get pid to use as key for the shared mem*/
+    cinfo.pid = getpid();
+    cinfo.action = message_type;
+    printf("I am data and my pid is %d\n", pid);
+    send(s, &cinfo, sizeof(struct connection_info), 0); 
+    close(s);      
+}
+
+void __attribute__((destructor)) free_shm()
+{
+    printf("Shm destructor is called\n");
+    if (shmdt(data) != 0) {
+        perror("shmdt");
+        exit(1);
+    }
+    
+    if (shmctl(shmid, IPC_RMID, NULL) == -1) {
+        perror("shmctl");
+        exit(1);
+    }
+    
+    /*Notify the server*/
+    send_message(BLKIN_LEAVE);
+}
+
 struct sampling_info *create_shm()
 {
     key_t key;
-    int shmid;
-    struct sampling_info *data;
     pid_t pid;
     
     /*get pid to use as key for the shared mem*/
@@ -37,35 +88,9 @@ struct sampling_info *create_shm()
     return data;
 }
 
-void send_pid()
+void blkin_enroll()
 {
-    int s, t, len;
-    struct sockaddr_un remote;
-
-    /*Connect*/
-    if ((s = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
-        perror("socket");
-        exit(1);
-    }
-
-    printf("Trying to connect...\n");
-
-    remote.sun_family = AF_UNIX;
-    strcpy(remote.sun_path, SOCK_PATH);
-    len = strlen(remote.sun_path) + sizeof(remote.sun_family);
-    if (connect(s, (struct sockaddr *)&remote, len) == -1) {
-        perror("connect");
-        exit(1);
-    }
-
-    printf("Connected.\n");
-    pid_t pid;
-    
-    /*get pid to use as key for the shared mem*/
-    pid = getpid();
-    printf("I am data and my pid is %d\n", pid);
-    send(s, &pid, sizeof(pid_t), 0); 
-    close(s);      
+    send_message(BLKIN_ENROLL);
 }
 
 struct sampling_info *sampling_init()
@@ -73,27 +98,6 @@ struct sampling_info *sampling_init()
     struct sampling_info *info = create_shm();
     info->rate = 1;
     info->req_count = 0;
-    send_pid();
+    blkin_enroll();
     return info;
 }
-
-#if 0
-int main()
-{
-    struct sampling_info *info = create_shm();
-    info->rate = 1;
-    info->req_count = 0;
-    send_pid();
-    int count = 0;
-    /*Simulate*/
-    while (1) {
-        info->req_count++;
-        count++;
-        if (count % 10000 == 0) {
-            printf("Data: rate = %d\n", info->rate);
-            count = 0;
-        }
-        usleep(500);
-    }
-}
-#endif
