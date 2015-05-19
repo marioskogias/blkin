@@ -20,6 +20,7 @@ struct list_el {
 };
 
 struct list_el *info = NULL;
+pthread_mutex_t listmutex;
 
 void release_shm(int pid)
 {
@@ -106,9 +107,16 @@ void *listen_for_incoming()
             el->p = get_shm(cinfo.pid);
             el->next = info;
             el->owner_pid = cinfo.pid;
+
+            pthread_mutex_lock (&listmutex);
             info = el;
-        } else if (cinfo.action == BLKIN_LEAVE) 
+            pthread_mutex_unlock (&listmutex);
+
+        } else if (cinfo.action == BLKIN_LEAVE) { 
+            pthread_mutex_lock (&listmutex);
             release_shm(cinfo.pid);
+            pthread_mutex_unlock (&listmutex);
+        }
     }
 
     return NULL;
@@ -143,6 +151,9 @@ void compute()
 int main()
 {
 
+    /*init the list mutex*/
+    pthread_mutex_init(&listmutex, NULL);
+
 	/* this variable is our reference to the second thread */
 	pthread_t listener_thread;
     
@@ -156,7 +167,9 @@ int main()
     printf("I will do the computations\n");
 	while(1) {
         sleep(INTERVAL);
+        pthread_mutex_lock (&listmutex);
         compute();
+        pthread_mutex_unlock (&listmutex);
     }
     /* wait for the second thread to finish */
 	if(pthread_join(listener_thread, NULL)) {
